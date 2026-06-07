@@ -8,6 +8,8 @@ Production (Render / Railway / Heroku / VPS):
     gunicorn --worker-class eventlet -w 1 run:app
     or use the Procfile.
 """
+import eventlet
+eventlet.monkey_patch()
 import os
 from app import create_app, socketio
 
