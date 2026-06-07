@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /auth/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /confession/
+Allow: /
+Allow: /privacy-policy
+Allow: /terms-of-service
+Allow: /community-guidelines
+Allow: /contact
+
+Sitemap: https://friendshipcircle.app/sitemap.xml

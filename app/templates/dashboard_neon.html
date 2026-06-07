@@ -1,0 +1,440 @@
+{% extends "base_neon.html" %}
+
+{% block extra_css %}
+<style>
+
+
+.dash-shell { padding: 28px 32px 40px; font-family: 'DM Sans', sans-serif; }
+
+/* ── Welcome banner ── */
+.welcome-banner {
+    background: linear-gradient(135deg, rgba(168,85,247,0.18), rgba(236,72,153,0.12));
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 24px;
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+}
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 90% 50%, rgba(168,85,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+}
+.welcome-left { position: relative; z-index: 1; }
+.welcome-greeting {
+    font-size: 0.82rem;
+    color: rgba(241,238,249,0.5);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.welcome-name {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+}
+.welcome-name span {
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.welcome-sub { font-size: 0.88rem; color: #b8cfe8; }
+.welcome-right { display: flex; gap: 10px; position: relative; z-index: 1; }
+.welcome-badge {
+    background: rgba(168,85,247,0.12);
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 14px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 80px;
+}
+.welcome-badge-val { font-size: 1.4rem; font-weight: 700; color: #A855F7; }
+.welcome-badge-lbl { font-size: 0.65rem; color: rgba(241,238,249,0.4); margin-top: 2px; letter-spacing: 0.4px; text-transform: uppercase; }
+
+/* ── Stat cards ── */
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.stat-tile {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: default;
+}
+.stat-tile:hover { border-color: rgba(168,85,247,0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.stat-tile-top { display: flex; align-items: center; justify-content: space-between; }
+.stat-tile-icon {
+    width: 42px; height: 42px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.ic-purple { background: rgba(168,85,247,0.15); }
+.ic-pink   { background: rgba(236,72,153,0.15); }
+.ic-green  { background: rgba(74,222,128,0.12); }
+.ic-blue   { background: rgba(96,165,250,0.12); }
+.stat-tile-badge { font-size: 0.68rem; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+.badge-green { background: rgba(74,222,128,0.12); color: #4ade80; }
+.badge-purple { background: rgba(168,85,247,0.12); color: #A855F7; }
+.stat-tile-val { font-size: 1.9rem; font-weight: 800; color: #fff; line-height: 1; }
+.stat-tile-lbl { font-size: 0.75rem; color: #b8cfe8; font-weight: 500; }
+
+/* ── Section headers ── */
+.sec-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+}
+.sec-title { font-size: 1.05rem; font-weight: 700; color: #fff; }
+.sec-pill {
+    font-size: 0.72rem; font-weight: 600;
+    background: rgba(168,85,247,0.12); color: #A855F7;
+    padding: 3px 10px; border-radius: 20px;
+    border: 1px solid rgba(168,85,247,0.2);
+}
+
+/* ── Two-col layout ── */
+.dash-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+
+/* ── Conversations ── */
+.conv-section { margin-bottom: 28px; }
+.conv-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+.conv-card {
+    display: block;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.conv-card:hover { border-color: rgba(168,85,247,0.35); transform: translateY(-2px); box-shadow: 0 12px 36px rgba(0,0,0,0.3); }
+.conv-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.conv-avatar {
+    width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 17px; color: #fff;
+    box-shadow: 0 4px 14px rgba(168,85,247,0.35);
+}
+.conv-name { font-weight: 600; font-size: 0.9rem; color: #fff; }
+.conv-status { font-size: 0.72rem; color: rgba(241,238,249,0.4); margin-top: 2px; }
+.conv-divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin-bottom: 10px; }
+.conv-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.conv-tag {
+    font-size: 0.65rem; font-weight: 600;
+    background: rgba(168,85,247,0.1); color: #A855F7;
+    padding: 3px 8px; border-radius: 10px;
+}
+
+/* Empty state */
+.empty-state {
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(168,85,247,0.2);
+    border-radius: 20px;
+    padding: 48px 24px;
+    text-align: center;
+}
+.empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty-title { font-size: 1rem; font-weight: 600; color: #fff; margin-bottom: 6px; }
+.empty-sub { font-size: 0.82rem; color: rgba(241,238,249,0.4); margin-bottom: 20px; }
+
+/* ── Privacy panel ── */
+.privacy-panel {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 22px;
+}
+.privacy-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 14px; border-radius: 12px; margin-bottom: 8px;
+}
+.privacy-row:last-child { margin-bottom: 0; }
+.privacy-row-green  { background: rgba(74,222,128,0.07); border: 1px solid rgba(74,222,128,0.1); }
+.privacy-row-purple { background: rgba(168,85,247,0.07); border: 1px solid rgba(168,85,247,0.1); }
+.privacy-label { font-size: 0.85rem; color: rgba(241,238,249,0.8); display: flex; align-items: center; gap: 8px; }
+.privacy-val-green  { font-size: 0.75rem; font-weight: 700; color: #4ade80; }
+.privacy-val-purple { font-size: 0.75rem; font-weight: 700; color: #A855F7; }
+
+/* ── Mini profile card ── */
+.mini-profile {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 22px;
+}
+.mini-profile-inner { display: flex; align-items: center; gap: 16px; }
+.mini-avatar {
+    width: 60px; height: 60px; border-radius: 16px; flex-shrink: 0;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 800; color: #fff;
+    box-shadow: 0 0 30px rgba(168,85,247,0.4);
+}
+.mini-username { font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 3px; }
+.mini-email { font-size: 0.78rem; color: rgba(241,238,249,0.4); margin-bottom: 10px; }
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .conv-grid  { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+    .dash-cols { grid-template-columns: 1fr; }
+    .welcome-right { display: none; }
+    .conv-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .dash-shell { padding: 14px 12px 32px; }
+    .welcome-banner { padding: 18px 16px; border-radius: 18px; flex-direction: column; align-items: flex-start; gap: 0; }
+    .welcome-name { font-size: 1.35rem; }
+    .welcome-right { display: none; }
+    .stats-row { grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 18px; }
+    .stat-tile { padding: 14px 12px; border-radius: 14px; }
+    .stat-tile-val { font-size: 1.5rem; }
+    .stat-tile-icon { width: 36px; height: 36px; font-size: 17px; border-radius: 10px; }
+    .conv-grid { grid-template-columns: 1fr; }
+    .conv-card { padding: 14px; border-radius: 16px; }
+    .dash-cols { grid-template-columns: 1fr; gap: 14px; }
+    .privacy-panel { padding: 16px; }
+    .privacy-row { padding: 10px 12px; font-size: 0.8rem; }
+    .mini-profile { padding: 16px; }
+    .sec-title { font-size: 0.95rem; }
+}
+@media (max-width: 400px) {
+    .stats-row { grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .stat-tile-val { font-size: 1.3rem; }
+    .welcome-name { font-size: 1.2rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-shell">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <div class="welcome-left">
+            <div class="welcome-greeting">👋 Good to see you back</div>
+            <div class="welcome-name">Hello, <span>{{ current_user.username }}</span></div>
+            <div class="welcome-sub">You have {{ unread_count | default(0) }} unread message{{ 's' if (unread_count | default(0)) != 1 else '' }} waiting for you</div>
+        </div>
+        <div class="welcome-right">
+            <div class="welcome-badge">
+                <div class="welcome-badge-val">{{ (connections | default([]))|length }}</div>
+                <div class="welcome-badge-lbl">Matches</div>
+            </div>
+            <div class="welcome-badge">
+                <div class="welcome-badge-val" style="color:#EC4899;">{{ unread_count | default(0) }}</div>
+                <div class="welcome-badge-lbl">Unread</div>
+            </div>
+            <div class="welcome-badge">
+                <div class="welcome-badge-val" style="color:#4ade80;">🔒</div>
+                <div class="welcome-badge-lbl">Secure</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Tiles -->
+    <div class="stats-row">
+        <div class="stat-tile">
+            <div class="stat-tile-top">
+                <div class="stat-tile-icon ic-purple"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="8" r="3.5" fill="url(#stp1)" filter="url(#stglow)"/><path d="M4 20C4 16.7 7.1 14 11 14C14.9 14 18 16.7 18 20" stroke="url(#stp2)" stroke-width="2.2" stroke-linecap="round" fill="none"/><defs><linearGradient id="stp1" x1="7.5" y1="4.5" x2="14.5" y2="11.5" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#EC4899"/></linearGradient><linearGradient id="stp2" x1="4" y1="17" x2="18" y2="20" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#EC4899"/></linearGradient><filter id="stglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs></svg></div>
+                <span class="stat-tile-badge badge-purple">Active</span>
+            </div>
+            <div class="stat-tile-val">{{ (connections | default([]))|length }}</div>
+            <div class="stat-tile-lbl">Your Matches</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-tile-top">
+                <div class="stat-tile-icon ic-pink"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 6.5C4 5.7 4.7 5 5.5 5H16.5C17.3 5 18 5.7 18 6.5V13.5C18 14.3 17.3 15 16.5 15H9L5 18.5V6.5Z" fill="url(#stc1)" filter="url(#stcglow)"/><circle cx="8.5" cy="10.5" r="1" fill="white" opacity="0.9"/><circle cx="11" cy="10.5" r="1" fill="white" opacity="0.9"/><circle cx="13.5" cy="10.5" r="1" fill="white" opacity="0.9"/><defs><linearGradient id="stc1" x1="4" y1="5" x2="18" y2="18.5" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#EC4899"/></linearGradient><filter id="stcglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs></svg></div>
+                <span class="stat-tile-badge badge-purple">New</span>
+            </div>
+            <div class="stat-tile-val">{{ unread_count | default(0) }}</div>
+            <div class="stat-tile-lbl">Unread Messages</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-tile-top">
+                <div class="stat-tile-icon ic-green"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="5" y="10" width="12" height="9" rx="3" fill="url(#lkg1)" filter="url(#lkglow)"/><path d="M7.5 10V7.5C7.5 5.6 9.1 4 11 4C12.9 4 14.5 5.6 14.5 7.5V10" stroke="url(#lkg2)" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="11" cy="14.5" r="1.5" fill="white" opacity="0.9"/><defs><linearGradient id="lkg1" x1="5" y1="10" x2="17" y2="19" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#22c55e"/></linearGradient><linearGradient id="lkg2" x1="7.5" y1="4" x2="14.5" y2="10" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#86efac"/></linearGradient><filter id="lkglow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs></svg></div>
+                <span class="stat-tile-badge badge-green">Active</span>
+            </div>
+            <div class="stat-tile-val" style="font-size:1.3rem;color:#4ade80;">E2E</div>
+            <div class="stat-tile-lbl">Encryption Status</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-tile-top">
+                <div class="stat-tile-icon ic-blue">🌙</div>
+                <span class="stat-tile-badge badge-purple">Today</span>
+            </div>
+            <div class="stat-tile-val" style="font-size:1.5rem;">{{ current_user.last_seen.strftime('%H:%M') }}</div>
+            <div class="stat-tile-lbl">Last Seen</div>
+        </div>
+    </div>
+
+    <!-- Conversations -->
+    <div class="conv-section" id="chats">
+        <div class="sec-header">
+            <span class="sec-title"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="vertical-align:middle;margin-right:7px"><path d="M2.5 4.5C2.5 3.7 3.2 3 4 3H14C14.8 3 15.5 3.7 15.5 4.5V11C15.5 11.8 14.8 12.5 14 12.5H7.5L3 16V4.5Z" fill="url(#convtg)"/><circle cx="6.5" cy="8" r="1" fill="white" opacity="0.9"/><circle cx="9" cy="8" r="1" fill="white" opacity="0.9"/><circle cx="11.5" cy="8" r="1" fill="white" opacity="0.9"/><defs><linearGradient id="convtg" x1="2.5" y1="3" x2="15.5" y2="16" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs></svg>Your Conversations</span>
+            <span class="sec-pill">{{ (connections | default([]))|length }} Active</span>
+        </div>
+
+        {% if connections %}
+        <div class="conv-grid">
+            {% for conn in connections %}
+                {% set other_user_id = conn.matched_user_id if conn.user_id == current_user.id else conn.user_id %}
+                <a href="{{ url_for('chat.chat_page', user_id=other_user_id) }}" class="conv-card" style="text-decoration: none; color: inherit;">
+                    <div class="conv-top">
+                        <div class="conv-avatar">{{ "★" if other_user_id[0].isdigit() else other_user_id[0].upper() }}</div>
+                        <div>
+                            <div class="conv-name">Match #{{ loop.index }}</div>
+                            <div class="conv-status">● Connected</div>
+                        </div>
+                    </div>
+                    <hr class="conv-divider">
+                    <div class="conv-tags">
+                        {% for tag in conn.common_problems.split(',') %}
+                            <span class="conv-tag">{{ tag.strip() }}</span>
+                        {% endfor %}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon"><svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M8 13C8 11.3 9.3 10 11 10H37C38.7 10 40 11.3 40 13V30C40 31.7 38.7 33 37 33H20L10 42V13Z" fill="url(#esv1)" filter="url(#esvglow)" opacity="0.85"/><circle cx="18" cy="22" r="2.5" fill="white" opacity="0.8"/><circle cx="24" cy="22" r="2.5" fill="white" opacity="0.8"/><circle cx="30" cy="22" r="2.5" fill="white" opacity="0.8"/><defs><linearGradient id="esv1" x1="8" y1="10" x2="40" y2="42" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#EC4899"/></linearGradient><filter id="esvglow" x="-15%" y="-15%" width="130%" height="130%"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs></svg></div>
+            <div class="empty-title">No matches yet</div>
+            <div class="empty-sub">Find someone who shares your interests and start a conversation</div>
+                        <select id="matchRegion" style="margin-right:8px;padding:6px 10px;border-radius:8px;border:1px solid rgba(168,85,247,0.25);background:#1a1035;color:#fff;font-size:0.85rem;outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23A855F7' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\");background-repeat:no-repeat;background-position:right 8px center;padding-right:28px;">
+                            <option value="" style="background:#1a1035;color:#fff;">Auto</option>
+                            <option value="europe" style="background:#1a1035;color:#fff;">Europe</option>
+                            <option value="americas" style="background:#1a1035;color:#fff;">Americas</option>
+                            <option value="south_asia" style="background:#1a1035;color:#fff;">South Asia</option>
+                            <option value="asia_pacific" style="background:#1a1035;color:#fff;">Asia Pacific</option>
+                            <option value="africa" style="background:#1a1035;color:#fff;">Africa</option>
+                        </select>
+                        <button class="btn-grad" onclick="findMatch()" style="display:inline-flex;align-items:center;gap:8px;">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 7C3 5.3 4.3 4 5.7 4C6.7 4 7.5 4.6 8 5.4C8.5 4.6 9.3 4 10.3 4C11.7 4 13 5.3 13 7C13 8.8 11.3 10.8 8 12.8C4.7 10.8 3 8.8 3 7Z" fill="url(#fbh1)"/><path d="M6 9.5C6 8.2 7 7.2 8 7.2C8.7 7.2 9.2 7.6 9.5 8.2C9.8 7.6 10.3 7.2 11 7.2C12 7.2 13 8.2 13 9.5C13 11 11.5 12.6 9.5 14C7.5 12.6 6 11 6 9.5Z" fill="url(#fbh2)" opacity="0.85"/><defs><linearGradient id="fbh1" x1="3" y1="4" x2="13" y2="12.8" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#C084FC"/><stop offset="100%" stop-color="#F9A8D4"/></linearGradient><linearGradient id="fbh2" x1="6" y1="7.2" x2="13" y2="14" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#F9A8D4"/></linearGradient></defs></svg>
+                            Find a Match
+                        </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bottom two cols -->
+    <div class="dash-cols">
+
+        <!-- Privacy & Security -->
+        <div>
+            <div class="sec-header"><span class="sec-title">Privacy & Security</span></div>
+            <div class="privacy-panel">
+                <div class="privacy-row privacy-row-green">
+                    <span class="privacy-label"><svg width="15" height="15" viewBox="0 0 15 15" fill="none" style="vertical-align:middle;margin-right:6px"><rect x="2.5" y="7" width="10" height="7" rx="2" fill="#4ade80" opacity="0.85"/><path d="M4.5 7V5.5C4.5 3.8 5.8 2.5 7.5 2.5C9.2 2.5 10.5 3.8 10.5 5.5V7" stroke="#4ade80" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>End-to-End Encryption</span>
+                    <span class="privacy-val-green">Active</span>
+                </div>
+                <div class="privacy-row privacy-row-purple">
+                    <span class="privacy-label">👻 Anonymous Mode</span>
+                    <span class="privacy-val-purple">Enabled</span>
+                </div>
+                <div class="privacy-row privacy-row-purple">
+                    <span class="privacy-label">🛡️ Content Filtering</span>
+                    <span class="privacy-val-purple">Protected</span>
+                </div>
+                <div class="privacy-row privacy-row-green" style="margin-top:4px;">
+                    <span class="privacy-label">✅ Account Verified</span>
+                    <span class="privacy-val-green">Yes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Your Profile -->
+        <div>
+            <div class="sec-header">
+                <span class="sec-title">Your Profile</span>
+                <a href="{{ url_for('main.profile') }}" style="font-size:0.78rem;color:#A855F7;text-decoration:none;font-weight:600;">Edit →</a>
+            </div>
+            <div class="mini-profile">
+                <div class="mini-profile-inner">
+                    <div class="mini-avatar">{{ current_user.username[0].upper() }}</div>
+                    <div style="flex:1;">
+                        <div class="mini-username">{{ current_user.username }}</div>
+                        <div class="mini-email">{{ current_user.email }}</div>
+                        <button class="btn-grad" style="padding:7px 16px;font-size:0.78rem;" onclick="window.location.href='{{ url_for('main.profile') }}'">Edit Profile</button>
+                    </div>
+                </div>
+                {% if current_user.bio %}
+                <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.06);font-size:0.82rem;color:rgba(241,238,249,0.5);line-height:1.6;">{{ current_user.bio }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Match Found Modal -->
+<div id="matchModal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;">
+    <div style="position:absolute;inset:0;background:rgba(4,11,27,0.75);backdrop-filter:blur(8px);" onclick="closeMatchModal()"></div>
+    <div style="position:relative;z-index:1;background:linear-gradient(145deg,#171326,#1a1035);border:1px solid rgba(168,85,247,0.35);border-radius:24px;padding:36px 32px 28px;max-width:340px;width:90%;text-align:center;box-shadow:0 0 60px rgba(168,85,247,0.3),0 24px 64px rgba(0,0,0,0.6);">
+        <!-- Hearts icon circle -->
+        <div style="width:80px;height:80px;border-radius:50%;border:2px solid rgba(168,85,247,0.5);background:rgba(168,85,247,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 24px rgba(168,85,247,0.4);">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Back heart -->
+                <path d="M12 18C12 14.5 14.5 12 17 12C18.8 12 20.3 13 21 14.5C21.7 13 23.2 12 25 12C27.5 12 30 14.5 30 18C30 21 27 24.5 21 28C15 24.5 12 21 12 18Z" fill="url(#mhg1)" opacity="0.7"/>
+                <!-- Front heart (bigger, lower) -->
+                <path d="M16 22C16 19.2 18 17 20 17C21.5 17 22.7 17.8 23.2 19C23.7 17.8 24.9 17 26.4 17C28.4 17 30.4 19.2 30.4 22C30.4 24.5 28 27.5 23.2 31C18.4 27.5 16 24.5 16 22Z" fill="url(#mhg2)"/>
+                <!-- Stars -->
+                <g fill="#E879F9" opacity="0.9">
+                    <path d="M9 12 L9.5 13.5 L11 14 L9.5 14.5 L9 16 L8.5 14.5 L7 14 L8.5 13.5Z"/>
+                    <path d="M33 10 L33.4 11.2 L34.6 11.6 L33.4 12 L33 13.2 L32.6 12 L31.4 11.6 L32.6 11.2Z"/>
+                    <path d="M35 24 L35.3 25 L36.3 25.3 L35.3 25.6 L35 26.6 L34.7 25.6 L33.7 25.3 L34.7 25Z"/>
+                </g>
+                <defs>
+                    <linearGradient id="mhg1" x1="12" y1="12" x2="30" y2="28" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#A855F7"/>
+                        <stop offset="100%" stop-color="#7C3AED"/>
+                    </linearGradient>
+                    <linearGradient id="mhg2" x1="16" y1="17" x2="30.4" y2="31" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stop-color="#C084FC"/>
+                        <stop offset="100%" stop-color="#EC4899"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;color:#fff;margin-bottom:8px;">
+            Match <span style="background:linear-gradient(135deg,#A855F7,#EC4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">found!</span>
+        </div>
+        <div style="font-size:0.9rem;color:rgba(241,238,249,0.55);margin-bottom:24px;">Check your conversations.</div>
+        <button onclick="closeMatchModal()" style="width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#A855F7,#EC4899);border:none;color:#fff;font-size:1rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;box-shadow:0 4px 24px rgba(168,85,247,0.5);letter-spacing:0.3px;transition:all 0.2s;">OK</button>
+    </div>
+</div>
+
+<script>
+function showMatchModal() {
+    const m = document.getElementById('matchModal');
+    m.style.display = 'flex';
+    setTimeout(() => m.querySelector('div:nth-child(2)').style.transform = 'scale(1)', 10);
+}
+function closeMatchModal() {
+    document.getElementById('matchModal').style.display = 'none';
+    location.reload();
+}
+async function findMatch() {
+    try {
+        const region = document.getElementById('matchRegion').value || null;
+        const r = await fetch('{{ url_for("match.find_match") }}', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ region }) });
+        const d = await r.json();
+        if (d.success) { showMatchModal(); }
+        else { alert(d.message || d.error); }
+    } catch(e) { alert('Failed: ' + e.message); }
+}
+</script>
+{% endblock %}

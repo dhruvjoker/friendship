@@ -1,0 +1,104 @@
+{% extends "base_neon.html" %}
+
+{% block title %}Community Guidelines — Friendship Circle{% endblock %}
+
+{% block extra_meta %}
+<meta name="description" content="Friendship Circle Community Guidelines — how to be a good member of our anonymous peer support community.">
+{% endblock %}
+
+{% block content %}
+<style>
+.legal-shell { max-width: 760px; margin: 0 auto; padding: 100px 24px 80px; }
+.legal-hero { margin-bottom: 56px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.legal-tag { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; background: linear-gradient(135deg, #A855F7, #EC4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; display: block; }
+.legal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.8rem; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 16px; }
+.legal-meta { color: #9a8fb0; font-size: 14px; }
+.legal-body h2 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.35rem; margin: 40px 0 14px; color: #F1EEF9; }
+.legal-body p { color: #9a8fb0; line-height: 1.8; font-size: 15px; margin-bottom: 16px; }
+.legal-body ul { color: #9a8fb0; line-height: 1.8; font-size: 15px; margin: 0 0 16px 20px; }
+.legal-body li { margin-bottom: 6px; }
+.legal-body a { color: #A855F7; text-decoration: underline; }
+.back-link { display: inline-flex; align-items: center; gap: 8px; color: #9a8fb0; text-decoration: none; font-size: 14px; margin-bottom: 40px; transition: color 0.2s; }
+.back-link:hover { color: #A855F7; }
+.rule-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; margin-bottom: 16px; }
+.rule-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.rule-emoji { font-size: 28px; }
+.rule-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+.rule-desc { color: #9a8fb0; font-size: 14px; line-height: 1.7; }
+.do-list li::marker { color: #22C55E; }
+.dont-list li::marker { color: #F43F5E; }
+</style>
+
+<div class="legal-shell">
+    <a class="back-link" href="/">← Back to Home</a>
+
+    <div class="legal-hero">
+        <span class="legal-tag">Community</span>
+        <h1 class="legal-title">Community Guidelines</h1>
+        <p class="legal-meta">Last updated: June 2025</p>
+    </div>
+
+    <div class="legal-body">
+        <p>Friendship Circle exists because vulnerability deserves a safe container. These guidelines define the shared agreement that makes that possible. Everyone here is going through something. Please treat each other accordingly.</p>
+
+        <h2>Our Founding Principles</h2>
+
+        <div class="rule-card">
+            <div class="rule-card-header"><div class="rule-emoji">🤝</div><div class="rule-title">Be human first</div></div>
+            <div class="rule-desc">Behind every username is a real person carrying something real. Approach every conversation with the humanity you'd want shown to you.</div>
+        </div>
+
+        <div class="rule-card">
+            <div class="rule-card-header"><div class="rule-emoji">🎭</div><div class="rule-title">Protect anonymity — yours and theirs</div></div>
+            <div class="rule-desc">Never ask for, share, or attempt to discover anyone's real identity. This includes names, locations, social media profiles, and contact details. Anonymity is the trust system here.</div>
+        </div>
+
+        <div class="rule-card">
+            <div class="rule-card-header"><div class="rule-emoji">💬</div><div class="rule-title">Listen as much as you speak</div></div>
+            <div class="rule-desc">This is peer support, not an advice column. Listening, validating, and being present are as valuable as anything you say. Resist the urge to immediately fix or advise.</div>
+        </div>
+
+        <div class="rule-card">
+            <div class="rule-card-header"><div class="rule-emoji">🛑</div><div class="rule-title">Respect boundaries, immediately</div></div>
+            <div class="rule-desc">If someone says they don't want to discuss a topic, drops a conversation, or sets a boundary — honour it, immediately and without pushback.</div>
+        </div>
+
+        <h2>What's Welcome Here</h2>
+        <ul class="do-list">
+            <li>Sharing your own experiences, feelings, and struggles honestly</li>
+            <li>Listening without judgment and validating emotions</li>
+            <li>Asking thoughtful questions to understand, not to probe</li>
+            <li>Checking in on matches you've connected with before</li>
+            <li>Reporting behaviour that makes you or others feel unsafe</li>
+        </ul>
+
+        <h2>What Is Not Allowed</h2>
+        <ul class="dont-list">
+            <li><strong>Harassment or intimidation</strong> — including repeated unwanted contact after someone has disengaged</li>
+            <li><strong>Sharing personal identifying information</strong> — yours or anyone else's</li>
+            <li><strong>Sexual content or advances</strong> — of any kind, unsolicited or otherwise</li>
+            <li><strong>Glorifying or encouraging self-harm or suicide</strong> — this is a zero-tolerance violation</li>
+            <li><strong>Hate speech</strong> — targeting any group based on identity</li>
+            <li><strong>Recruitment</strong> — for groups, causes, platforms, or relationships outside the app</li>
+            <li><strong>Commercial solicitation</strong> — selling, promoting, or advertising anything</li>
+            <li><strong>Impersonation</strong> — pretending to be someone else, including platform staff</li>
+        </ul>
+
+        <h2>Crisis Situations</h2>
+        <p>If a match shares that they are in immediate danger of harming themselves or others, please:</p>
+        <ul>
+            <li>Encourage them to contact emergency services (911, 999, 112)</li>
+            <li>Share a crisis resource: <a href="https://www.crisistextline.org/" target="_blank" rel="noopener">Crisis Text Line</a> (text HOME to 741741)</li>
+            <li>Report the conversation to our moderation team using the in-chat report button</li>
+        </ul>
+        <p>You are not responsible for another person's safety. But you can point them toward people who are equipped to help.</p>
+
+        <h2>Enforcement</h2>
+        <p>Violations are reviewed by our moderation team. Consequences range from a warning to permanent account removal depending on severity. We do not warn before removing accounts for severe violations (self-harm glorification, sexual content, hate speech).</p>
+        <p>You can report any message or user using the report button in the app. All reports are reviewed within 24 hours.</p>
+
+        <h2>Questions?</h2>
+        <p>Contact our moderation team at <a href="mailto:safety@friendshipcircle.app">safety@friendshipcircle.app</a>.</p>
+    </div>
+</div>
+{% endblock %}

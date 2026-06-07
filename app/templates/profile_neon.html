@@ -1,0 +1,455 @@
+{% extends "base_neon.html" %}
+
+{% block extra_css %}
+<style>
+
+
+.prof-shell { padding: 28px 32px 48px; font-family: 'DM Sans', sans-serif; max-width: 900px; margin: 0 auto; }
+
+/* ── Hero ── */
+.prof-hero {
+    background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(236,72,153,0.1));
+    border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 28px;
+    padding: 36px 32px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+}
+.prof-hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(168,85,247,0.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+.prof-hero-inner { display: flex; align-items: center; gap: 24px; position: relative; z-index: 1; }
+.prof-avatar-wrap { position: relative; flex-shrink: 0; }
+.prof-avatar {
+    width: 88px; height: 88px; border-radius: 22px;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px; font-weight: 800; color: #fff;
+    box-shadow: 0 0 40px rgba(168,85,247,0.45), 0 0 80px rgba(168,85,247,0.15);
+}
+.prof-verified {
+    position: absolute; bottom: -4px; right: -4px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: #fff; border: 2px solid #0D0B1A;
+}
+.prof-hero-info { flex: 1; }
+.prof-username {
+    font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 4px; line-height: 1.1;
+}
+.prof-email { font-size: 0.88rem; color: #b8cfe8; margin-bottom: 14px; }
+.prof-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.prof-tag {
+    font-size: 0.72rem; font-weight: 600;
+    background: rgba(168,85,247,0.12); color: #A855F7;
+    border: 1px solid rgba(168,85,247,0.2);
+    padding: 4px 12px; border-radius: 20px;
+}
+.prof-back { margin-left: auto; align-self: flex-start; }
+
+/* ── Stat row ── */
+.prof-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 28px; }
+.prof-stat {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: center;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.prof-stat:hover { border-color: rgba(168,85,247,0.3); box-shadow: 0 8px 28px rgba(0,0,0,0.25); }
+.prof-stat-icon { font-size: 2rem; margin-bottom: 10px; }
+.prof-stat-val {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 4px; line-height: 1;
+}
+.prof-stat-val-green { font-size: 2rem; font-weight: 800; color: #4ade80; margin-bottom: 4px; line-height: 1; }
+.prof-stat-lbl { font-size: 0.75rem; color: rgba(241,238,249,0.4); font-weight: 500; }
+
+/* ── Edit form ── */
+.edit-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 24px;
+    padding: 28px;
+    margin-bottom: 20px;
+}
+.edit-card-title {
+    font-size: 1.05rem; font-weight: 700; color: #fff;
+    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+}
+.field-group { margin-bottom: 18px; }
+.field-label {
+    display: block; font-size: 0.75rem; font-weight: 600;
+    color: rgba(241,238,249,0.5); letter-spacing: 0.5px;
+    text-transform: uppercase; margin-bottom: 8px;
+}
+.field-input {
+    width: 100%; box-sizing: border-box;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 13px; padding: 13px 16px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: #fff;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+}
+.field-input::placeholder { color: rgba(241,238,249,0.25); }
+.field-input:focus {
+    border-color: rgba(168,85,247,0.7);
+    box-shadow: 0 0 0 3px rgba(168,85,247,0.1);
+}
+
+/* Fix native select dropdown option colours */
+select.field-input {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23A855F7' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+    background-color: #1a1035;
+}
+select.field-input option {
+    background: #1a1035;
+    color: #fff;
+}
+
+/* ── Interests grid ── */
+.interests-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 10px;
+}
+.interest-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 9px;
+    cursor: pointer; transition: all 0.18s; user-select: none;
+}
+.interest-item.selected {
+    background: rgba(168,85,247,0.12);
+    border-color: rgba(168,85,247,0.4);
+}
+.interest-item input { display: none; }
+.interest-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    flex-shrink: 0; transition: all 0.18s;
+    display: flex; align-items: center; justify-content: center;
+}
+.interest-item.selected .interest-dot {
+    background: linear-gradient(135deg,#A855F7,#EC4899);
+    border-color: transparent;
+}
+.interest-text { font-size: 0.82rem; font-weight: 500; color: rgba(241,238,249,0.7); }
+.interest-item.selected .interest-text { color: #fff; }
+
+/* ── Save button ── */
+.save-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
+.btn-outline {
+    background: transparent; border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px; padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600;
+    color: rgba(241,238,249,0.6); cursor: pointer; transition: all 0.2s;
+}
+.btn-outline:hover { border-color: rgba(168,85,247,0.4); color: #fff; }
+
+/* ── Toast ── */
+.toast {
+    position: fixed; bottom: 28px; right: 28px;
+    background: rgba(30,18,50,0.95); border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 14px; padding: 14px 20px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500;
+    color: #fff; backdrop-filter: blur(20px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    z-index: 9999; display: flex; align-items: center; gap: 10px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media (max-width: 900px) {
+    .prof-stats { grid-template-columns: repeat(3,1fr); }
+    .prof-hero-inner { flex-wrap: wrap; }
+}
+@media (max-width: 600px) {
+    .prof-shell { padding: 14px 12px 40px; max-width: 100%; }
+    .prof-hero { padding: 20px 16px; border-radius: 18px; }
+    .prof-hero-inner { flex-direction: column; align-items: flex-start; gap: 14px; position: relative; }
+    .prof-back { position: absolute; top: 0; right: 0; }
+    .prof-back .btn-grad { padding: 6px 12px; font-size: 0.75rem; }
+    .prof-avatar { width: 72px; height: 72px; border-radius: 18px; font-size: 28px; }
+    .prof-username { font-size: 1.35rem; }
+    .prof-email { font-size: 0.8rem; }
+    .prof-stats { grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .prof-stat { padding: 16px 10px; border-radius: 14px; }
+    .prof-stat-icon { font-size: 1.5rem; margin-bottom: 6px; }
+    .prof-stat-val { font-size: 1.5rem; }
+    .prof-stat-lbl { font-size: 0.65rem; }
+    .edit-card { padding: 18px 14px; border-radius: 16px; }
+    .edit-card-title { font-size: 0.95rem; margin-bottom: 16px; }
+    .field-input { padding: 11px 13px; font-size: 0.9rem; border-radius: 11px; }
+    .interests-grid { grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .interest-item { padding: 9px 11px; border-radius: 10px; }
+    .interest-text { font-size: 0.78rem; }
+    .save-row { flex-direction: column-reverse; gap: 8px; }
+    .btn-outline, .btn-grad { width: 100%; text-align: center; justify-content: center; }
+}
+@media (max-width: 400px) {
+    .prof-stats { grid-template-columns: repeat(3,1fr); gap: 6px; }
+    .prof-stat { padding: 12px 8px; }
+    .prof-stat-val { font-size: 1.2rem; }
+    .interests-grid { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="prof-shell">
+
+    <!-- Hero -->
+    <div class="prof-hero">
+        <div class="prof-hero-inner">
+            <div class="prof-avatar-wrap">
+                <div class="prof-avatar">{{ current_user.username[0].upper() }}</div>
+                <div class="prof-verified">✓</div>
+            </div>
+            <div class="prof-hero-info">
+                <div class="prof-username">{{ current_user.username }}</div>
+                <div class="prof-email">{{ current_user.email }}</div>
+                <div class="prof-tags">
+                    {% if current_user.get_problems() %}
+                        {% for p in current_user.get_problems() %}
+                            <span class="prof-tag">{{ p }}</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="prof-tag">No interests yet</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="prof-back">
+                <button class="btn-grad" onclick="window.location.href='{{ url_for('main.dashboard') }}'">← Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="prof-stats">
+        <div class="prof-stat">
+            <div class="prof-stat-icon">💬</div>
+            <div class="prof-stat-val">{{ current_user.messages_sent.count() }}</div>
+            <div class="prof-stat-lbl">Messages Sent</div>
+        </div>
+        <div class="prof-stat">
+            <div class="prof-stat-icon">👥</div>
+            <div class="prof-stat-val">{{ current_user.connections.count() }}</div>
+            <div class="prof-stat-lbl">Connections</div>
+        </div>
+        <div class="prof-stat">
+            <div class="prof-stat-icon">⭐</div>
+            <div class="prof-stat-val-green">Active</div>
+            <div class="prof-stat-lbl">Account Status</div>
+        </div>
+    </div>
+
+    <!-- Edit form -->
+    <div class="edit-card">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" style="margin-bottom:18px;">
+            <ol style="display:flex;align-items:center;gap:6px;list-style:none;font-size:12px;color:rgba(241,238,249,0.38);">
+                <li><a href="{{ url_for('main.dashboard') }}" style="color:rgba(168,85,247,0.7);text-decoration:none;font-weight:500;" onmouseover="this.style.color='#a855f7'" onmouseout="this.style.color='rgba(168,85,247,0.7)'">Dashboard</a></li>
+                <li style="opacity:0.4;">›</li>
+                <li style="color:rgba(241,238,249,0.7);font-weight:600;">Edit Profile</li>
+            </ol>
+        </nav>
+
+        <!-- Progress bar -->
+        <div style="margin-bottom:22px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+                <span style="font-size:11px;font-weight:600;color:rgba(241,238,249,0.5);letter-spacing:1px;text-transform:uppercase;">Profile Completion</span>
+                <span style="font-size:12px;font-weight:700;color:#a855f7;" id="profilePct">0%</span>
+            </div>
+            <div style="height:5px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;">
+                <div id="profileBar" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#7C3AED,#EC4899);transition:width .4s ease;width:0%"></div>
+            </div>
+            <div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;">
+                <span id="step-bio" style="font-size:11px;display:flex;align-items:center;gap:4px;color:rgba(241,238,249,0.35);">
+                    <span id="step-bio-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15);display:inline-block;"></span>Bio
+                </span>
+                <span id="step-interests" style="font-size:11px;display:flex;align-items:center;gap:4px;color:rgba(241,238,249,0.35);">
+                    <span id="step-interests-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15);display:inline-block;"></span>Interests
+                </span>
+                <span id="step-region" style="font-size:11px;display:flex;align-items:center;gap:4px;color:rgba(241,238,249,0.35);">
+                    <span id="step-region-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15);display:inline-block;"></span>Region
+                </span>
+                <span id="step-tz" style="font-size:11px;display:flex;align-items:center;gap:4px;color:rgba(241,238,249,0.35);">
+                    <span id="step-tz-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.15);display:inline-block;"></span>Timezone
+                </span>
+            </div>
+        </div>
+
+        <div class="edit-card-title">✏️ Edit Profile</div>
+
+        <div class="field-group">
+            <label class="field-label" for="bioInput">Bio</label>
+            <p style="font-size:12px;color:rgba(241,238,249,0.38);margin:-4px 0 8px;font-style:italic;">A few words about you — shown to potential matches.</p>
+            <textarea class="field-input" id="bioInput" rows="3"
+                placeholder="Tell people a little about yourself…"
+                oninput="updateProgress()">{{ current_user.bio or '' }}</textarea>
+        </div>
+
+        <div class="field-group">
+            <label class="field-label">Your Interests</label>
+            <p style="font-size:12px;color:rgba(241,238,249,0.38);margin:-4px 0 8px;font-style:italic;">Select topics you'd like to connect over. We use these to find your best match.</p>
+            <div class="interests-grid" id="interestsGrid">
+                {% set all_interests = ['Anxiety', 'Depression', 'Loneliness', 'Stress', 'Relationships', 'Self-growth', 'Grief', 'Work-life balance', 'Confidence', 'Motivation', 'Mindfulness', 'Social anxiety'] %}
+                {% set user_problems = current_user.get_problems() or [] %}
+                {% for interest in all_interests %}
+                <label class="interest-item {% if interest in user_problems %}selected{% endif %}">
+                    <input type="checkbox" name="problems" value="{{ interest }}"
+                        {% if interest in user_problems %}checked{% endif %}
+                        onchange="toggleInterest(this); updateProgress();">
+                    <div class="interest-dot">{% if interest in user_problems %}✓{% endif %}</div>
+                    <span class="interest-text">{{ interest }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="field-group">
+            <label class="field-label" for="regionSelect">Preferred Region</label>
+            <p style="font-size:12px;color:rgba(241,238,249,0.38);margin:-4px 0 8px;font-style:italic;">Helps match you with people nearby or in a preferred timezone zone.</p>
+            <select class="field-input" id="regionSelect" onchange="updateProgress()">
+                <option value="auto" {% if not current_user.preferred_region %}selected{% endif %}>Auto (detect)</option>
+                <option value="europe" {% if current_user.preferred_region == 'europe' %}selected{% endif %}>Europe</option>
+                <option value="americas" {% if current_user.preferred_region == 'americas' %}selected{% endif %}>Americas</option>
+                <option value="south_asia" {% if current_user.preferred_region == 'south_asia' %}selected{% endif %}>South Asia</option>
+                <option value="asia_pacific" {% if current_user.preferred_region == 'asia_pacific' %}selected{% endif %}>Asia Pacific</option>
+                <option value="africa" {% if current_user.preferred_region == 'africa' %}selected{% endif %}>Africa</option>
+            </select>
+        </div>
+
+        <div class="field-group">
+            <label class="field-label" for="tzSelect">Preferred Timezone</label>
+            <p style="font-size:12px;color:rgba(241,238,249,0.38);margin:-4px 0 8px;font-style:italic;">Sets how message timestamps appear in your chat.</p>
+            <select class="field-input" id="tzSelect" onchange="updateProgress()">
+                <option value="auto" {% if not current_user.preferred_timezone %}selected{% endif %}>Auto (browser timezone)</option>
+                <option value="UTC" {% if current_user.preferred_timezone == 'UTC' %}selected{% endif %}>UTC</option>
+                <option value="Europe/London" {% if current_user.preferred_timezone == 'Europe/London' %}selected{% endif %}>Europe/London</option>
+                <option value="Europe/Berlin" {% if current_user.preferred_timezone == 'Europe/Berlin' %}selected{% endif %}>Europe/Berlin</option>
+                <option value="America/New_York" {% if current_user.preferred_timezone == 'America/New_York' %}selected{% endif %}>America/New_York</option>
+                <option value="America/Los_Angeles" {% if current_user.preferred_timezone == 'America/Los_Angeles' %}selected{% endif %}>America/Los_Angeles</option>
+                <option value="Asia/Kolkata" {% if current_user.preferred_timezone == 'Asia/Kolkata' %}selected{% endif %}>Asia/Kolkata</option>
+                <option value="Asia/Singapore" {% if current_user.preferred_timezone == 'Asia/Singapore' %}selected{% endif %}>Asia/Singapore</option>
+                <option value="Australia/Sydney" {% if current_user.preferred_timezone == 'Australia/Sydney' %}selected{% endif %}>Australia/Sydney</option>
+                <option value="Africa/Johannesburg" {% if current_user.preferred_timezone == 'Africa/Johannesburg' %}selected{% endif %}>Africa/Johannesburg</option>
+            </select>
+        </div>
+
+        <div class="save-row">
+            <button class="btn-outline" style="min-height:48px;min-width:48px;" onclick="window.location.href='{{ url_for('main.dashboard') }}'">Cancel</button>
+            <button class="btn-grad" style="min-height:48px;min-width:48px;" onclick="saveProfile()">Save Changes</button>
+            <button onclick="openDeleteModal()" style="padding:12px 22px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.25);border-radius:14px;color:#f87171;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(248,113,113,0.15)'" onmouseout="this.style.background='rgba(248,113,113,0.08)'">Delete Account</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+function toggleInterest(cb) {
+    const label = cb.closest('.interest-item');
+    const dot = label.querySelector('.interest-dot');
+    if (cb.checked) {
+        label.classList.add('selected');
+        dot.textContent = '✓';
+    } else {
+        label.classList.remove('selected');
+        dot.textContent = '';
+    }
+}
+
+function showToast(msg, ok) {
+    const t = document.getElementById('toast');
+    t.textContent = (ok ? '✅ ' : '❌ ') + msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function saveProfile() {
+    const bio = document.getElementById('bioInput').value;
+    const problems = Array.from(document.querySelectorAll('input[name="problems"]:checked')).map(e => e.value);
+    try {
+        const r = await fetch('{{ url_for("main.update_profile") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bio, problems, preferred_region: document.getElementById('regionSelect').value, preferred_timezone: document.getElementById('tzSelect').value })
+        });
+        const d = await r.json();
+        if (d.success) showToast('Profile updated!', true);
+        else showToast(d.error || 'Something went wrong', false);
+    } catch(e) { showToast('Failed: ' + e.message, false); }
+}
+
+function updateProgress() {
+    const hasBio      = document.getElementById('bioInput').value.trim().length > 0;
+    const hasInterest = document.querySelectorAll('input[name="problems"]:checked').length > 0;
+    const hasRegion   = document.getElementById('regionSelect').value !== 'auto';
+    const hasTz       = document.getElementById('tzSelect').value !== 'auto';
+    const steps       = [hasBio, hasInterest, hasRegion, hasTz];
+    const done        = steps.filter(Boolean).length;
+    const pct         = Math.round((done / steps.length) * 100);
+
+    document.getElementById('profilePct').textContent = pct + '%';
+    document.getElementById('profileBar').style.width = pct + '%';
+
+    const labels = ['bio','interests','region','tz'];
+    steps.forEach((s, i) => {
+        const dot = document.getElementById('step-' + labels[i] + '-dot');
+        const lbl = document.getElementById('step-' + labels[i]);
+        if (dot) dot.style.background = s ? '#a855f7' : 'rgba(255,255,255,0.15)';
+        if (lbl) lbl.style.color = s ? 'rgba(241,238,249,0.75)' : 'rgba(241,238,249,0.35)';
+    });
+}
+
+// Run on page load to reflect existing data
+document.addEventListener('DOMContentLoaded', updateProgress);
+
+/* ══ ACCOUNT DELETION ══ */
+function openDeleteModal(){ document.getElementById('deleteAccountModal').style.display='flex'; }
+function closeDeleteModal(){ document.getElementById('deleteAccountModal').style.display='none'; document.getElementById('deleteConfirmInput').value=''; }
+async function confirmDeleteAccount(){
+    if(document.getElementById('deleteConfirmInput').value.trim()!=='DELETE'){ showToast('Type DELETE exactly','err'); return; }
+    const r=await fetch('/api/account/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirm:'DELETE',delete_messages:true})});
+    const d=await r.json();
+    if(d.success) window.location='/auth/logout';
+    else showToast(d.error||'Failed','err');
+}
+</script>
+
+<!-- Delete Account Modal -->
+<div id="deleteAccountModal" style="display:none;position:fixed;inset:0;background:rgba(4,11,27,0.85);backdrop-filter:blur(8px);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#0d0b1a;border:1px solid rgba(248,113,113,0.3);border-radius:20px;padding:32px;max-width:420px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
+    <div style="font-size:28px;text-align:center;margin-bottom:12px">&#x26A0;&#xFE0F;</div>
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#f87171;text-align:center;margin-bottom:8px">Delete Account</div>
+    <p style="color:rgba(241,238,249,0.5);font-size:13px;text-align:center;margin-bottom:20px">Permanently deletes your account, all messages, and matches. <strong style="color:#f87171">Cannot be undone.</strong></p>
+    <label style="color:rgba(241,238,249,0.6);font-size:13px">Type <strong style="color:#f87171">DELETE</strong> to confirm</label>
+    <input id="deleteConfirmInput" type="text" placeholder="DELETE" style="width:100%;margin-top:8px;padding:10px 14px;background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.25);border-radius:10px;color:#f1eef9;font-size:15px;font-family:'DM Sans',sans-serif;box-sizing:border-box">
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button onclick="closeDeleteModal()" style="flex:1;padding:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:rgba(241,238,249,0.6);cursor:pointer;font-family:'DM Sans',sans-serif">Cancel</button>
+      <button onclick="confirmDeleteAccount()" style="flex:1;padding:11px;background:linear-gradient(135deg,#ef4444,#b91c1c);border:none;border-radius:10px;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;font-weight:700">Delete Forever</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base_neon.html" %}
+
+{% block content %}
+<div class="page active" style="display: grid; gap: 24px;">
+    <div class="section-title" style="align-items: flex-start;">
+        <div>
+            <div style="font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px;">Admin Monitor</div>
+            <h1 style="font-family: 'Syne', sans-serif; font-size: 2rem;">Conversation Review</h1>
+            <p style="color: var(--muted); margin-top: 8px; max-width: 680px;">Inspect recent messages, reports, and moderation actions with the same Neon Midnight styling as the main application.</p>
+        </div>
+        <button class="btn-grad" onclick="window.location.href='{{ url_for('main.dashboard') }}'">← Back to Dashboard</button>
+    </div>
+
+    <div style="display: grid; gap: 24px;">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="card" style="padding: 22px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12);">
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 0.95rem;">
+                            <span><strong>From:</strong> {{ message.sender_name }}</span>
+                            <span><strong>To:</strong> {{ message.receiver_name }}</span>
+                            <span><strong>Sent:</strong> {{ message.sent_at }}</span>
+                            <span><strong>Read:</strong> {{ 'Yes' if message.is_read else 'No' }}</span>
+                        </div>
+                        <span class="pill pill-purple">Message</span>
+                    </div>
+                    <pre style="white-space: pre-wrap; word-break: break-word; font-size: 0.95rem; line-height: 1.8; color: var(--text); margin: 0;">{{ message.content }}</pre>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card" style="text-align: center; padding: 48px; color: var(--muted);">
+                <div style="font-size: 32px; margin-bottom: 12px;">✨</div>
+                <div style="font-size: 16px;">No messages have been sent yet.</div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

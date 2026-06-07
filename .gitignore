@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+*.env
+!.env.example
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Node / Flutter / mobile (not part of Flask deployment)
+node_modules/
+package-lock.json
+lib/
+android/
+ios/
+pubspec.yaml
+pubspec.lock
+*.dart
+*.gradle
+*.kotlin
+
+# Uploaded files
+app/static/uploads/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

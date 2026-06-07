@@ -1,0 +1,155 @@
+{% extends "base_neon.html" %}
+
+{% block title %}Privacy Policy — Friendship Circle{% endblock %}
+
+{% block extra_meta %}
+<meta name="description" content="Friendship Circle Privacy Policy — how we collect, use, and protect your data.">
+<meta name="robots" content="index, follow">
+{% endblock %}
+
+{% block content %}
+<style>
+.legal-shell {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 100px 24px 80px;
+}
+.legal-hero {
+    margin-bottom: 56px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.legal-tag {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 12px; display: block;
+}
+.legal-title {
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.8rem;
+    line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 16px;
+}
+.legal-meta { color: #9a8fb0; font-size: 14px; }
+.legal-body h2 {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.35rem;
+    margin: 40px 0 14px; color: #F1EEF9;
+}
+.legal-body h3 {
+    font-weight: 600; font-size: 1rem; margin: 24px 0 10px; color: #C084FC;
+}
+.legal-body p { color: #9a8fb0; line-height: 1.8; font-size: 15px; margin-bottom: 16px; }
+.legal-body ul { color: #9a8fb0; line-height: 1.8; font-size: 15px; margin: 0 0 16px 20px; }
+.legal-body li { margin-bottom: 6px; }
+.legal-body a { color: #A855F7; text-decoration: underline; }
+.legal-highlight {
+    background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 12px; padding: 20px 24px; margin: 24px 0;
+    color: #C084FC; font-size: 14px; line-height: 1.7;
+}
+.back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: #9a8fb0; text-decoration: none; font-size: 14px;
+    margin-bottom: 40px; transition: color 0.2s;
+}
+.back-link:hover { color: #A855F7; }
+</style>
+
+<div class="legal-shell">
+    <a class="back-link" href="/">← Back to Home</a>
+
+    <div class="legal-hero">
+        <span class="legal-tag">Legal</span>
+        <h1 class="legal-title">Privacy Policy</h1>
+        <p class="legal-meta">Last updated: June 2025 &nbsp;·&nbsp; Effective: June 1, 2025</p>
+    </div>
+
+    <div class="legal-body">
+        <div class="legal-highlight">
+            <strong>The short version:</strong> We collect as little as possible. We encrypt everything. We never sell your data. Your anonymity is the product — not something we trade away.
+        </div>
+
+        <h2>1. Who We Are</h2>
+        <p>Friendship Circle ("we", "our", "the platform") is an anonymous peer support service. Our goal is to connect people with shared experiences in an encrypted, privacy-first environment. We are committed to protecting your personal information and your right to privacy.</p>
+        <p>If you have questions about this policy, please contact us at <a href="mailto:privacy@friendshipcircle.app">privacy@friendshipcircle.app</a>.</p>
+
+        <h2>2. Information We Collect</h2>
+
+        <h3>Information you provide</h3>
+        <ul>
+            <li><strong>Username:</strong> A pseudonym of your choice. Not your real name.</li>
+            <li><strong>Email address:</strong> Used only for account access and critical security notifications. Never shared with other users.</li>
+            <li><strong>Struggles/problems:</strong> Categories you select (e.g. "anxiety", "loneliness") used for matching. Stored in anonymised form.</li>
+            <li><strong>Bio:</strong> Optional, free-text description. You control what you share here.</li>
+        </ul>
+
+        <h3>Information collected automatically</h3>
+        <ul>
+            <li><strong>IP address:</strong> Logged for fraud prevention and abuse detection only. Deleted after 90 days.</li>
+            <li><strong>Session data:</strong> Standard session cookies for keeping you logged in.</li>
+            <li><strong>Usage data:</strong> Aggregate, anonymised metrics (page views, feature usage) with no personally identifiable information.</li>
+        </ul>
+
+        <h3>What we never collect</h3>
+        <ul>
+            <li>Your real name</li>
+            <li>Your photo or likeness</li>
+            <li>Your phone number</li>
+            <li>Your location beyond country-level for moderation purposes</li>
+        </ul>
+
+        <h2>3. Message Encryption</h2>
+        <p>All messages sent through Friendship Circle are encrypted using Fernet symmetric encryption before they are stored on our servers. Your encryption key is unique to your account.</p>
+        <p><strong>This means: we cannot read your messages.</strong> Our staff, engineers, and moderation team do not have access to the content of your conversations. In the event of a data breach, encrypted messages are unreadable to any attacker.</p>
+        <p>Messages flagged by automated content safety filters are reviewed in obfuscated form to enforce community guidelines, without revealing the full conversation context.</p>
+
+        <h2>4. How We Use Your Information</h2>
+        <ul>
+            <li>To create and maintain your account</li>
+            <li>To match you with compatible users based on shared struggles</li>
+            <li>To enforce our community guidelines and prevent abuse</li>
+            <li>To send essential security and account notifications (not marketing, unless you opt in)</li>
+            <li>To improve the platform through aggregate, anonymised analytics</li>
+        </ul>
+
+        <h2>5. Sharing Your Information</h2>
+        <p>We do not sell, rent, or trade your personal information to any third party. We may share limited data with:</p>
+        <ul>
+            <li><strong>Service providers:</strong> Hosting, email delivery, payment processing — under strict data processing agreements.</li>
+            <li><strong>Law enforcement:</strong> Only when legally required by a valid court order or subpoena, and only to the minimum extent required.</li>
+        </ul>
+        <p>Other users on the platform see only your username and the match overlap you share. They never see your email, IP address, or any other identifying information.</p>
+
+        <h2>6. Data Retention</h2>
+        <ul>
+            <li><strong>Account data:</strong> Retained while your account is active, then deleted within 30 days of account deletion.</li>
+            <li><strong>Messages:</strong> Retained for the duration of an active connection. Deleted 30 days after a connection is closed.</li>
+            <li><strong>IP logs:</strong> Deleted after 90 days.</li>
+            <li><strong>Aggregate analytics:</strong> Retained indefinitely in anonymised form.</li>
+        </ul>
+
+        <h2>7. Your Rights</h2>
+        <p>Depending on your location, you may have the right to:</p>
+        <ul>
+            <li>Access the personal data we hold about you</li>
+            <li>Request correction of inaccurate data</li>
+            <li>Request deletion of your data ("right to be forgotten")</li>
+            <li>Object to or restrict certain processing</li>
+            <li>Data portability</li>
+        </ul>
+        <p>To exercise any of these rights, contact us at <a href="mailto:privacy@friendshipcircle.app">privacy@friendshipcircle.app</a>. We respond within 30 days.</p>
+
+        <h2>8. Cookies</h2>
+        <p>We use only essential cookies required to operate the platform (session management, CSRF protection). We do not use advertising or third-party tracking cookies.</p>
+
+        <h2>9. Children's Privacy</h2>
+        <p>Friendship Circle is not intended for users under the age of 18. We do not knowingly collect personal information from minors. If you believe a minor has registered, please contact us immediately and we will delete the account.</p>
+
+        <h2>10. Changes to This Policy</h2>
+        <p>We will notify registered users of material changes to this policy by email and via an in-app notice at least 14 days before changes take effect. Continued use of the platform after that date constitutes acceptance of the updated policy.</p>
+
+        <h2>11. Contact</h2>
+        <p>For privacy enquiries: <a href="mailto:privacy@friendshipcircle.app">privacy@friendshipcircle.app</a><br>
+        For general support: <a href="/contact">Contact page</a></p>
+    </div>
+</div>
+{% endblock %}

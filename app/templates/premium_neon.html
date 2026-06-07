@@ -1,0 +1,695 @@
+{% extends "base_neon.html" %}
+
+{% block extra_css %}
+<style>
+.container-main { padding: 88px 24px 40px !important; }
+
+/* ── Premium Modal Overlay ── */
+.premium-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 11, 27, 0.92);
+    backdrop-filter: blur(20px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+.premium-overlay.open { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Modal Card ── */
+.premium-modal {
+    width: 100%;
+    max-width: 520px;
+    background: linear-gradient(145deg, #0f0c1e 0%, #171326 50%, #0d1525 100%);
+    border: 1px solid rgba(168,85,247,0.25);
+    border-radius: 28px;
+    padding: 36px 32px 32px;
+    position: relative;
+    box-shadow:
+        0 0 0 1px rgba(168,85,247,0.08),
+        0 32px 80px rgba(0,0,0,0.6),
+        0 0 120px rgba(168,85,247,0.08);
+    animation: modalUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes modalUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Glow line at top */
+.premium-modal::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 15%; right: 15%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #A855F7, #EC4899, transparent);
+    border-radius: 0 0 8px 8px;
+}
+
+/* Close btn */
+.modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.07);
+    color: rgba(241,238,249,0.5);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+}
+.modal-close:hover { background: rgba(236,72,153,0.12); border-color: rgba(236,72,153,0.3); color: #EC4899; }
+
+/* Header */
+.premium-header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+.crown-icon {
+    width: 64px; height: 64px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(236,72,153,0.2));
+    border: 1px solid rgba(168,85,247,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 16px;
+    box-shadow: 0 0 40px rgba(168,85,247,0.2);
+    animation: crownPulse 3s ease-in-out infinite;
+}
+@keyframes crownPulse {
+    0%,100% { box-shadow: 0 0 40px rgba(168,85,247,0.2); }
+    50% { box-shadow: 0 0 60px rgba(168,85,247,0.35), 0 0 20px rgba(236,72,153,0.2); }
+}
+.premium-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #C084FC, #F472B6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 6px;
+}
+.premium-subtitle {
+    font-size: 13px;
+    color: rgba(184,207,232,0.7);
+    line-height: 1.5;
+}
+
+/* Free trial badge */
+.trial-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(74,222,128,0.12), rgba(34,197,94,0.08));
+    border: 1px solid rgba(74,222,128,0.25);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4ade80;
+    margin: 10px auto 0;
+    width: fit-content;
+}
+
+/* Feature list */
+.features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(168,85,247,0.05);
+    border: 1px solid rgba(168,85,247,0.1);
+    border-radius: 12px;
+    font-size: 12px;
+    color: rgba(241,238,249,0.85);
+    font-weight: 500;
+    transition: all .2s;
+}
+.feature-item:hover { border-color: rgba(168,85,247,0.25); background: rgba(168,85,247,0.09); }
+.feature-item .fi-icon { font-size: 16px; flex-shrink: 0; }
+.feature-item.locked { opacity: 0.5; }
+.feature-item .lock-badge {
+    margin-left: auto;
+    font-size: 10px;
+    background: rgba(236,72,153,0.15);
+    color: #EC4899;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+/* Plan tabs */
+.plan-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 4px;
+}
+.plan-tab {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: rgba(241,238,249,0.45);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .25s;
+    text-align: center;
+    position: relative;
+}
+.plan-tab.active {
+    background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.2));
+    color: #F1EEF9;
+    box-shadow: 0 2px 12px rgba(168,85,247,0.2);
+}
+.plan-tab .tab-price {
+    display: block;
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-top: 2px;
+}
+.plan-tab .tab-label { font-size: 10px; opacity: 0.6; }
+.plan-tab .tab-save {
+    position: absolute;
+    top: -8px; right: -4px;
+    background: #4ade80;
+    color: #0a1a0a;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 6px;
+}
+
+/* Selected plan summary */
+.plan-summary {
+    background: rgba(168,85,247,0.07);
+    border: 1px solid rgba(168,85,247,0.18);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.plan-summary-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #F1EEF9;
+}
+.plan-summary-desc { font-size: 11px; color: rgba(184,207,232,0.6); margin-top: 2px; }
+.plan-summary-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    text-align: right;
+}
+.plan-summary-period { font-size: 11px; color: rgba(184,207,232,0.5); text-align: right; }
+
+/* CTA button */
+.premium-cta {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all .25s;
+    box-shadow: 0 8px 28px rgba(168,85,247,0.4);
+    margin-bottom: 12px;
+}
+.premium-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #C084FC, #F472B6);
+    opacity: 0;
+    transition: opacity .25s;
+}
+.premium-cta:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(168,85,247,0.55); }
+.premium-cta:hover::before { opacity: 1; }
+.premium-cta:active { transform: scale(0.98); }
+.premium-cta span { position: relative; z-index: 1; }
+
+/* Continue free */
+.continue-free {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(184,207,232,0.45);
+    cursor: pointer;
+    transition: color .2s;
+    padding: 4px;
+}
+.continue-free:hover { color: rgba(184,207,232,0.75); }
+
+/* Fine print */
+.fine-print {
+    text-align: center;
+    font-size: 10px;
+    color: rgba(184,207,232,0.3);
+    margin-top: 12px;
+    line-height: 1.6;
+}
+
+/* ── Navbar Premium Button ── */
+.navbar-premium-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(236,72,153,0.12));
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 10px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    color: #C084FC;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+}
+.navbar-premium-btn:hover {
+    background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.2));
+    border-color: rgba(168,85,247,0.5);
+    box-shadow: 0 0 16px rgba(168,85,247,0.25);
+    color: #fff;
+}
+.navbar-premium-btn .crown { font-size: 14px; }
+.navbar-premium-btn .trial-days {
+    background: rgba(74,222,128,0.15);
+    color: #4ade80;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-weight: 700;
+    margin-left: 2px;
+}
+
+/* ── Premium Page (standalone) ── */
+.premium-page-wrap {
+    max-width: 580px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+.premium-page-hero {
+    text-align: center;
+    margin-bottom: 36px;
+}
+.premium-page-hero .hero-crown {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(236,72,153,0.15));
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 60px rgba(168,85,247,0.2);
+}
+.premium-page-hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #C084FC, #F472B6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 10px;
+}
+.premium-page-hero p {
+    font-size: 15px;
+    color: rgba(184,207,232,0.7);
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Full feature table */
+.features-table {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(168,85,247,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+.features-table-header {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px;
+    gap: 0;
+    padding: 14px 20px;
+    background: rgba(168,85,247,0.08);
+    border-bottom: 1px solid rgba(168,85,247,0.1);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(184,207,232,0.5);
+}
+.features-table-header span:not(:first-child) { text-align: center; }
+.features-table-row {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px;
+    gap: 0;
+    padding: 13px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+    align-items: center;
+    transition: background .15s;
+}
+.features-table-row:last-child { border-bottom: none; }
+.features-table-row:hover { background: rgba(168,85,247,0.04); }
+.features-table-row .row-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(241,238,249,0.85);
+}
+.features-table-row .row-icon { font-size: 16px; }
+.features-table-row .row-check {
+    text-align: center;
+    font-size: 16px;
+}
+.check-yes { color: #4ade80; }
+.check-no  { color: rgba(255,255,255,0.15); font-size: 12px; }
+.check-premium { color: #A855F7; }
+
+@media (max-width: 600px) {
+    .features-grid { grid-template-columns: 1fr; }
+    .premium-modal { padding: 28px 20px 24px; border-radius: 20px; }
+    .plan-tabs { gap: 4px; }
+    .plan-tab { padding: 8px 4px; font-size: 11px; }
+    .plan-tab .tab-price { font-size: 15px; }
+    .premium-page-hero h1 { font-size: 24px; }
+    .features-table-header { grid-template-columns: 1fr 60px 60px; padding: 12px 14px; }
+    .features-table-row { grid-template-columns: 1fr 60px 60px; padding: 11px 14px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="premium-page-wrap">
+    <div class="premium-page-hero">
+        <div class="hero-crown">👑</div>
+        <h1>Sphinx Premium</h1>
+        <p>Unlock the full Sphinx experience. Connect deeper, share freely, and make every conversation count.</p>
+        <div class="trial-badge">
+            ✦ &nbsp;3-day free trial included · Cancel anytime
+        </div>
+    </div>
+
+    <!-- Feature comparison table -->
+    <div class="features-table">
+        <div class="features-table-header">
+            <span>Feature</span>
+            <span>Free</span>
+            <span>Premium</span>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">💬</span> Text messages</div>
+            <div class="row-check check-yes">✓</div>
+            <div class="row-check check-yes">✓</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">😊</span> Emoji reactions</div>
+            <div class="row-check check-yes">✓</div>
+            <div class="row-check check-yes">✓</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">🕵️</span> Anonymous confessions</div>
+            <div class="row-check check-yes">✓</div>
+            <div class="row-check check-yes">✓</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">📎</span> File & photo attachments</div>
+            <div class="row-check check-no">—</div>
+            <div class="row-check check-premium">✦</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">📞</span> Voice calls</div>
+            <div class="row-check check-no">—</div>
+            <div class="row-check check-premium">✦</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">🎥</span> Video calls</div>
+            <div class="row-check check-no">—</div>
+            <div class="row-check check-premium">✦</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">🔒</span> End-to-end encryption</div>
+            <div class="row-check check-yes">✓</div>
+            <div class="row-check check-yes">✓</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">⚡</span> Priority matching</div>
+            <div class="row-check check-no">—</div>
+            <div class="row-check check-premium">✦</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">🎭</span> Custom avatar themes</div>
+            <div class="row-check check-no">—</div>
+            <div class="row-check check-premium">✦</div>
+        </div>
+        <div class="features-table-row">
+            <div class="row-name"><span class="row-icon">📖</span> Read receipts</div>
+            <div class="row-check check-no">—</div>
+            <div class="row-check check-premium">✦</div>
+        </div>
+    </div>
+
+    <!-- Embedded plan selector -->
+    <div class="premium-modal" style="max-width:100%;border-radius:24px;padding:28px 24px 24px;">
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#F1EEF9;margin-bottom:4px;">Choose your plan</div>
+            <div class="trial-badge" style="margin:8px auto 0;">✦ &nbsp;3 days free · then auto-renews</div>
+        </div>
+
+        <!-- Plan tabs -->
+        <div class="plan-tabs">
+            <button class="plan-tab active" id="tab-monthly" onclick="selectPlan('monthly')">
+                <span class="tab-label">Monthly</span>
+                <span class="tab-price" id="price-monthly">₹20</span>
+                <span class="tab-label">/month</span>
+            </button>
+            <button class="plan-tab" id="tab-quarterly" onclick="selectPlan('quarterly')">
+                <span class="tab-save">-17%</span>
+                <span class="tab-label">Quarterly</span>
+                <span class="tab-price" id="price-quarterly">₹50</span>
+                <span class="tab-label">/3 months</span>
+            </button>
+            <button class="plan-tab" id="tab-yearly" onclick="selectPlan('yearly')">
+                <span class="tab-save">-38%</span>
+                <span class="tab-label">Yearly</span>
+                <span class="tab-price" id="price-yearly">₹149</span>
+                <span class="tab-label">/year</span>
+            </button>
+        </div>
+
+        <!-- Summary -->
+        <div class="plan-summary">
+            <div>
+                <div class="plan-summary-name" id="summaryName">Monthly Premium</div>
+                <div class="plan-summary-desc" id="summaryDesc">3-day free trial · then ₹20/month</div>
+            </div>
+            <div>
+                <div class="plan-summary-price" id="summaryPrice">₹20</div>
+                <div class="plan-summary-period" id="summaryPeriod">per month</div>
+            </div>
+        </div>
+
+        <button class="premium-cta" onclick="startCheckout()">
+            <span>🎉 &nbsp;Start Free Trial</span>
+        </button>
+        <div class="continue-free" onclick="window.history.back()">Continue with free plan →</div>
+        <div class="fine-print">
+            After your 3-day free trial, you'll be charged the selected plan amount.<br>
+            Cancel anytime before trial ends. Prices inclusive of applicable taxes.
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal (Checkout) -->
+<div class="premium-overlay" id="checkoutOverlay">
+    <div class="premium-modal" style="max-width:480px;">
+        <button class="modal-close" onclick="closeCheckout()">✕</button>
+        <div class="premium-header">
+            <div class="crown-icon">💳</div>
+            <div class="premium-title">Complete Payment</div>
+            <div class="premium-subtitle">Your trial starts immediately. No charge for 3 days.</div>
+        </div>
+
+        <!-- Order summary -->
+        <div style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.15);border-radius:14px;padding:14px 16px;margin-bottom:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:13px;color:rgba(184,207,232,0.7);">Plan</span>
+                <span style="font-size:13px;font-weight:600;color:#F1EEF9;" id="checkoutPlanName">Monthly Premium</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="font-size:13px;color:rgba(184,207,232,0.7);">Free trial</span>
+                <span style="font-size:13px;font-weight:600;color:#4ade80;">3 days</span>
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,0.06);margin:8px 0;padding-top:8px;display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:14px;font-weight:600;color:#F1EEF9;">Due today</span>
+                <span style="font-size:14px;font-weight:700;color:#4ade80;">₹0.00</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:12px;color:rgba(184,207,232,0.5);">After trial ends</span>
+                <span style="font-size:12px;font-weight:600;" id="checkoutAfterPrice" style="color:#A855F7;">₹20/month</span>
+            </div>
+        </div>
+
+        <!-- Payment method buttons -->
+        <div style="margin-bottom:20px;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(184,207,232,0.4);margin-bottom:10px;">Pay via</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                <button onclick="selectPayment(this,'upi')" class="pay-method-btn active-pay">
+                    <span style="font-size:18px;">📲</span>
+                    <span>UPI</span>
+                </button>
+                <button onclick="selectPayment(this,'card')" class="pay-method-btn">
+                    <span style="font-size:18px;">💳</span>
+                    <span>Card</span>
+                </button>
+                <button onclick="selectPayment(this,'netbanking')" class="pay-method-btn">
+                    <span style="font-size:18px;">🏦</span>
+                    <span>Net Banking</span>
+                </button>
+                <button onclick="selectPayment(this,'wallet')" class="pay-method-btn">
+                    <span style="font-size:18px;">👛</span>
+                    <span>Wallet</span>
+                </button>
+            </div>
+        </div>
+
+        <button class="premium-cta" onclick="confirmPayment()">
+            <span id="ctaText">🔒 &nbsp;Confirm & Start Trial</span>
+        </button>
+        <div class="fine-print" style="margin-top:14px;">
+            Payments are securely processed. By continuing you agree to our Terms of Service & Privacy Policy.
+        </div>
+    </div>
+</div>
+
+<style>
+.pay-method-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    color: rgba(241,238,249,0.65);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    width: 100%;
+}
+.pay-method-btn:hover { border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.07); color: #F1EEF9; }
+.pay-method-btn.active-pay { border-color: rgba(168,85,247,0.45); background: rgba(168,85,247,0.12); color: #C084FC; box-shadow: 0 0 12px rgba(168,85,247,0.12); }
+</style>
+
+<script>
+let isIntl = false;
+let currentPlan = 'monthly';
+
+// Auto-detect India vs international by timezone
+(function detectRegion() {
+    try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        isIntl = !tz.startsWith('Asia/Kolkata') && !tz.startsWith('Asia/Calcutta');
+    } catch(e) { isIntl = false; }
+})();
+
+const plans = {
+    monthly:   { inr: '₹20',  usd: '$4.99',  inrFull: '₹20/month',    usdFull: '$4.99/month',    name: 'Monthly Premium',   desc_inr: '3-day free trial · then ₹20/month',    desc_usd: '3-day free trial · then $4.99/month',   period_inr: 'per month',   period_usd: 'per month'  },
+    quarterly: { inr: '₹50',  usd: '$12.99', inrFull: '₹50/3 months',  usdFull: '$12.99/3 months',name: 'Quarterly Premium', desc_inr: '3-day free trial · then ₹50/quarter',   desc_usd: '3-day free trial · then $12.99/quarter',period_inr: 'per quarter', period_usd: 'per quarter'},
+    yearly:    { inr: '₹149', usd: '$29.99', inrFull: '₹149/year',     usdFull: '$29.99/year',    name: 'Yearly Premium',    desc_inr: '3-day free trial · then ₹149/year',    desc_usd: '3-day free trial · then $29.99/year',   period_inr: 'per year',    period_usd: 'per year'  }
+};
+
+function updateAllPrices() {
+    ['monthly','quarterly','yearly'].forEach(p => {
+        document.getElementById('price-' + p).textContent = isIntl ? plans[p].usd : plans[p].inr;
+    });
+    updateSummary();
+}
+
+function selectPlan(plan) {
+    currentPlan = plan;
+    document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + plan).classList.add('active');
+    updateSummary();
+}
+
+function updateSummary() {
+    const p = plans[currentPlan];
+    document.getElementById('summaryName').textContent   = p.name;
+    document.getElementById('summaryDesc').textContent   = isIntl ? p.desc_usd   : p.desc_inr;
+    document.getElementById('summaryPrice').textContent  = isIntl ? p.usd        : p.inr;
+    document.getElementById('summaryPeriod').textContent = isIntl ? p.period_usd : p.period_inr;
+}
+
+function startCheckout() {
+    document.getElementById('checkoutPlanName').textContent   = plans[currentPlan].name;
+    document.getElementById('checkoutAfterPrice').textContent = isIntl ? plans[currentPlan].usdFull : plans[currentPlan].inrFull;
+    document.getElementById('checkoutOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCheckout() {
+    document.getElementById('checkoutOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+function selectPayment(btn, method) {
+    document.querySelectorAll('.pay-method-btn').forEach(b => b.classList.remove('active-pay'));
+    btn.classList.add('active-pay');
+}
+
+function confirmPayment() {
+    const btn = document.querySelector('#checkoutOverlay .premium-cta');
+    const txt = document.getElementById('ctaText');
+    btn.disabled = true;
+    txt.innerHTML = '⏳ &nbsp;Processing…';
+    setTimeout(() => {
+        txt.innerHTML = '✓ &nbsp;Trial Activated!';
+        btn.style.background = 'linear-gradient(135deg,#4ade80,#22c55e)';
+        setTimeout(() => { window.location.href = '/dashboard'; }, 1400);
+    }, 1800);
+}
+
+document.getElementById('checkoutOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeCheckout();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCheckout(); });
+
+// Init on load
+updateAllPrices();
+</script>
+{% endblock %}

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sphinx — Anonymous Chat Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0D0B1A;
+            --bg2: #171326;
+            --card: rgba(255,255,255,0.04);
+            --card-border: rgba(255,255,255,0.07);
+            --grad: linear-gradient(135deg, #A855F7, #EC4899);
+            --grad2: linear-gradient(135deg, #7C3AED, #F43F5E);
+            --purple: #A855F7;
+            --pink: #EC4899;
+            --red: #F43F5E;
+            --violet: #7C3AED;
+            --text: #F1EEF9;
+            --muted: #b8cfe8;
+            --glow-p: rgba(168,85,247,0.35);
+            --glow-pk: rgba(236,72,153,0.3);
+            --sidebar-w: 72px;
+            --sidebar-expanded: 240px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #040B1B;
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.4;
+        }
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            animation: orbFloat 8s ease-in-out infinite;
+        }
+        .orb-1 { width: 400px; height: 400px; background: var(--glow-p); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: var(--glow-pk); bottom: 100px; right: -80px; animation-delay: -3s; }
+        @keyframes orbFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-30px) scale(1.05); } }
+        .app {
+            display: flex;
+            width: 100%;
+            max-width: 100%;
+            /* FIX: use dynamic viewport height to avoid mobile address-bar issues */
+            height: 100vh;
+            height: 100dvh;
+            position: relative;
+            z-index: 1;
+            overflow: hidden; /* prevents the outer body from scrolling */
+        }
+        .navbar { width: 100%; background: rgba(23,19,38,0.88); backdrop-filter: blur(20px); border-bottom: 1px solid var(--card-border); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; height: 73px; z-index: 1000; }
+        .navbar-brand { display: flex; align-items: center; gap: 12px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .navbar-logo { width: 40px; height: 40px; border-radius: 12px; background: var(--grad); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff; box-shadow: 0 0 20px var(--glow-p); flex-shrink: 0; }
+        .navbar-center { flex: 1; display: flex; justify-content: center; gap: 28px; }
+        .navbar-link { color: var(--text); text-decoration: none; font-size: 14px; font-weight: 600; transition: color 0.2s, opacity 0.2s; cursor: pointer; opacity: 1; }
+        .navbar-link:hover { color: var(--purple); opacity: 1; }
+        .navbar-link.active { color: var(--purple); opacity: 1; font-weight: 700; }
+        .navbar-right { display: flex; align-items: center; gap: 12px; }
+        .navbar-premium-btn {
+            display: flex; align-items: center; gap: 6px;
+            background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(236,72,153,0.12));
+            border: 1px solid rgba(168,85,247,0.3); border-radius: 10px;
+            padding: 7px 12px; font-size: 12px; font-weight: 700;
+            font-family: 'DM Sans', sans-serif; color: #C084FC;
+            cursor: pointer; transition: all .2s; white-space: nowrap; text-decoration: none;
+        }
+        .navbar-premium-btn:hover {
+            background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.2));
+            border-color: rgba(168,85,247,0.5); box-shadow: 0 0 16px rgba(168,85,247,0.25); color: #fff;
+        }
+        .navbar-premium-btn .trial-days {
+            background: rgba(74,222,128,0.15); color: #4ade80;
+            font-size: 9px; padding: 1px 5px; border-radius: 5px; font-weight: 700;
+        }
+
+        /* ── Burger button ── */
+        .burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; border-radius: 12px; background: var(--card); border: 1px solid var(--card-border); cursor: pointer; padding: 10px; transition: border-color 0.2s; flex-shrink: 0; }
+        .burger:hover { border-color: var(--purple); }
+        .burger span { display: block; height: 2px; border-radius: 2px; background: var(--text); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); transform-origin: center; }
+        .burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .burger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        .icon-btn { width: 40px; height: 40px; border-radius: 12px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: all 0.2s; position: relative; }
+        .icon-btn:hover { border-color: var(--purple); box-shadow: 0 0 12px var(--glow-p); }
+        .notif-dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--pink); border: 2px solid var(--bg); }
+        .avatar-ring { width: 36px; height: 36px; border-radius: 50%; background: var(--grad); padding: 2px; box-shadow: 0 0 12px var(--glow-p); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s; }
+        .avatar-ring:hover { transform: scale(1.1); }
+        .avatar-inner { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #4f3a7a, #2a1f4e); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; }
+        .container-main { flex: 1; overflow-y: auto; padding: 28px 32px; }
+        .page { display: none; animation: fadeUp 0.4s cubic-bezier(0.4,0,0.2,1); }
+        .page.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; padding: 24px; backdrop-filter: blur(10px); transition: border-color 0.2s, box-shadow 0.2s; }
+        .card:hover { border-color: rgba(168,85,247,0.25); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .card-label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+        .card-value { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 700; }
+        .card-change { font-size: 12px; margin-top: 4px; }
+        .up { color: #4ade80; }
+        .down { color: var(--red); }
+        .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 24px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; margin-bottom: 24px; }
+        .section-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+        .stat-card { display: flex; gap: 16px; align-items: flex-start; }
+        .stat-icon { width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+        .stat-icon.purple { background: rgba(168,85,247,0.15); }
+        .stat-icon.pink { background: rgba(236,72,153,0.15); }
+        .btn-grad { background: var(--grad); color: #fff; border: none; padding: 10px 20px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; box-shadow: 0 4px 20px rgba(168,85,247,0.4); }
+        .btn-grad:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(168,85,247,0.65); background: linear-gradient(135deg, #C084FC, #F472B6); }
+        .grad-text { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .pill-purple { background: rgba(168,85,247,0.12); color: var(--purple); }
+        .pill-green { background: rgba(74,222,128,0.12); color: #4ade80; }
+        .scrollbar::-webkit-scrollbar { width: 6px; }
+        .scrollbar::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 3px; }
+        .align-center { display: flex; align-items: center; justify-content: center; }
+        .full-height { min-height: calc(100vh - 84px); }
+
+        /* ── Global Tooltips ── */
+        [data-tip] { position: relative; }
+        [data-tip]::after {
+            content: attr(data-tip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(23,19,38,0.97);
+            border: 1px solid rgba(168,85,247,0.25);
+            color: rgba(241,238,249,0.9);
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            padding: 5px 10px;
+            border-radius: 8px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity .18s, transform .18s;
+            transform: translateX(-50%) translateY(4px);
+            z-index: 9999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+        [data-tip]:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* ── Bottom Navigation (Mobile) ── */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(23,19,38,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(168,85,247,0.15);
+            padding: max(8px, env(safe-area-inset-bottom));
+            z-index: 200;
+        }
+        
+        .bottom-nav-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 100%;
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            min-height: 48px; /* WCAG 48px tap target */
+            min-width: 48px;
+            text-decoration: none;
+            color: rgba(241,238,249,0.72); /* boosted from 0.5 for contrast */
+            font-size: 11px;
+            font-weight: 600; /* bolder for legibility */
+            border-radius: 12px;
+            transition: all 0.2s;
+            flex: 1;
+            text-align: center;
+            justify-content: center;
+        }
+        
+        .bottom-nav-item:hover {
+            color: var(--text);
+            background: rgba(168,85,247,0.08);
+        }
+        
+        .bottom-nav-item.active {
+            color: var(--purple);
+            background: rgba(168,85,247,0.12);
+        }
+        
+        .bottom-nav-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+        
+        .bottom-nav-label {
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* ── Tablet ── */
+        @media (max-width: 900px) {
+            .grid-4 { grid-template-columns: repeat(2,1fr); }
+            .navbar-center { display: none; }
+            .container-main { padding: 20px 20px; }
+            .burger { display: flex; }
+        }
+        /* ── Mobile ── */
+        @media (max-width: 600px) {
+            .navbar { padding: 12px 16px; }
+            .navbar-brand span { display: none; }
+            .navbar-logo { width: 34px; height: 34px; font-size: 15px; }
+            .navbar-right > :not(.burger):not(.avatar-ring) { display: none !important; }
+            .burger { display: none !important; }
+            .bottom-nav { display: block; }
+            .container-main { 
+                padding: 16px 12px 80px 12px;
+                /* Ensures the main content doesn't get hidden behind the navbar */
+                padding-top: 85px; 
+                /* Adds safe padding at the bottom so content can clear the bottom nav */
+                padding-bottom: calc(88px + env(safe-area-inset-bottom));
+                height: 100%;
+                overflow-y: auto; /* allows only the main content area to scroll */
+            }
+            .card { padding: 16px; border-radius: 14px; }
+            .grid-4 { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .stat-icon { width: 40px; height: 40px; font-size: 18px; }
+            .btn-grad { padding: 9px 16px; font-size: 12px; }
+            h1, .page-title { font-size: 1.4rem !important; }
+            h2 { font-size: 1.1rem !important; }
+        }
+        /* ── Small phones ── */
+        @media (max-width: 400px) {
+            .navbar { padding: 10px 12px; }
+            .icon-btn { width: 34px; height: 34px; font-size: 15px; }
+            .avatar-ring { width: 30px; height: 30px; }
+            .avatar-inner { width: 26px; height: 26px; font-size: 12px; }
+            .bottom-nav-label { font-size: 9px; }
+            .bottom-nav-icon { font-size: 20px; }
+        }
+
+        /* ── Global select dark fix ── */
+        select {
+            background: #1a1035 !important;
+            color: #fff !important;
+        }
+        select option {
+            background: #1a1035 !important;
+            color: #fff !important;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="app">
+        <div style="width: 100%; display: flex; flex-direction: column; height: 100vh; height: 100dvh;">
+            <nav class="navbar">
+                <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                    <div class="navbar-logo" style="background:none;padding:0;overflow:hidden;">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+                          <rect width="40" height="40" rx="10" fill="#0D0B1A"/>
+                          <!-- Spiral swirl -->
+                          <circle cx="20" cy="20" r="6" fill="#0a0812"/>
+                          <path d="M20 4 C30 4, 36 12, 36 20 C36 29, 28 35, 20 35 C11 35, 5 28, 6 20 C7 13, 13 8, 20 9" 
+                                fill="none" stroke="url(#sg1)" stroke-width="3.5" stroke-linecap="round"/>
+                          <path d="M20 7 C28 7, 33 14, 33 20 C33 27, 27 32, 20 32 C13 32, 8 26, 9 20 C10 14, 15 10, 20 11" 
+                                fill="none" stroke="url(#sg2)" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+                          <path d="M20 10 C26 10, 30 15, 30 20 C30 25, 26 29, 20 29 C15 29, 11 25, 12 20" 
+                                fill="none" stroke="url(#sg3)" stroke-width="1.5" stroke-linecap="round" opacity="0.4"/>
+                          <!-- Stars -->
+                          <circle cx="8" cy="10" r="1.2" fill="#A855F7" opacity="0.9"/>
+                          <circle cx="32" cy="8" r="0.9" fill="#EC4899" opacity="0.8"/>
+                          <circle cx="31" cy="31" r="1.4" fill="#A855F7" opacity="0.9"/>
+                          <circle cx="10" cy="30" r="0.8" fill="#EC4899" opacity="0.7"/>
+                          <defs>
+                            <linearGradient id="sg1" x1="4" y1="20" x2="36" y2="20" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#7C3AED"/>
+                              <stop offset="100%" stop-color="#F43F5E"/>
+                            </linearGradient>
+                            <linearGradient id="sg2" x1="9" y1="7" x2="33" y2="32" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#A855F7"/>
+                              <stop offset="100%" stop-color="#EC4899"/>
+                            </linearGradient>
+                            <linearGradient id="sg3" x1="12" y1="10" x2="30" y2="29" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#C084FC"/>
+                              <stop offset="100%" stop-color="#F472B6"/>
+                            </linearGradient>
+                          </defs>
+                        </svg>
+                    </div>
+                    <span>Sphinx</span>
+                </a>
+
+                {% if current_user.is_authenticated %}
+                    <div class="navbar-center">
+                        <a class="navbar-link{% if request.endpoint == 'main.dashboard' %} active{% endif %}" href="{{ url_for('main.dashboard') }}" data-tip="Your home base">Dashboard</a>
+                        {% if current_user.is_authenticated %}
+                        {% set other_user_id = None %}
+                        {% for conn in current_user.connections_as_user1 %}{% if other_user_id is none %}{% set other_user_id = conn.user2_id %}{% endif %}{% endfor %}
+                        {% for conn in current_user.connections_as_user2 %}{% if other_user_id is none %}{% set other_user_id = conn.user1_id %}{% endif %}{% endfor %}
+                        {% if other_user_id %}
+                        <a class="navbar-link{% if request.endpoint and request.endpoint.startswith('chat') %} active{% endif %}" href="{{ url_for('chat.chat_page', user_id=other_user_id) }}" data-tip="Chat with your matches" style="display:inline-flex;align-items:center;gap:5px;">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="vertical-align:middle">
+                                <path d="M2 3C2 2.4 2.5 2 3 2H11C11.5 2 12 2.4 12 3V8.5C12 9.1 11.5 9.5 11 9.5H5.5L2 12V3Z" fill="url(#cnav)"/>
+                                <circle cx="5" cy="5.8" r="0.8" fill="white" opacity="0.9"/>
+                                <circle cx="7" cy="5.8" r="0.8" fill="white" opacity="0.9"/>
+                                <circle cx="9" cy="5.8" r="0.8" fill="white" opacity="0.9"/>
+                                <defs><linearGradient id="cnav" x1="2" y1="2" x2="12" y2="12" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs>
+                            </svg>
+                            Chat
+                        </a>
+                        {% endif %}
+                        {% endif %}
+                        <a class="navbar-link{% if request.endpoint == 'main.profile' %} active{% endif %}" href="{{ url_for('main.profile') }}" data-tip="Edit your profile">Profile</a>
+                        <a class="navbar-link{% if request.endpoint and request.endpoint.startswith('confession') %} active{% endif %}" href="{{ url_for('confession.index') }}" data-tip="Post an anonymous confession" style="display:inline-flex;align-items:center;gap:4px;"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="vertical-align:middle;margin-right:4px"><circle cx="7" cy="7" r="2.2" fill="#0a0812"/><path d="M7 1C10 1,13 3.5,13 7C13 10.5,10 13,7 13C4 13,1.5 10,2 7C2.5 4.5,4.5 2.5,7 3" fill="none" stroke="url(#vnl)" stroke-width="1.8" stroke-linecap="round"/><defs><linearGradient id="vnl" x1="2" y1="7" x2="13" y2="7" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs></svg> Void <span style="font-size:10px;opacity:0.55;font-weight:400;">(confessions)</span></a>
+                        {% if current_user.username in config.get('ADMIN_USERNAMES', []) %}
+                            <a class="navbar-link" href="{{ url_for('main.admin_messages') }}" data-tip="Admin messages">Admin</a>
+                            <a class="navbar-link" href="{{ url_for('main.admin_moderation') }}" data-tip="Review reports">Moderation</a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="navbar-center">
+                        <a class="navbar-link" href="{{ url_for('auth.register') }}">Join</a>
+                        <a class="navbar-link" href="{{ url_for('auth.login') }}">Login</a>
+                    </div>
+                {% endif %}
+
+                <div class="navbar-right">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.premium') }}" class="navbar-premium-btn" data-tip="Upgrade to Premium">
+                            <span class="crown">👑</span>
+                            <span>Premium</span>
+                            <span class="trial-days">FREE</span>
+                        </a>
+                        <div class="icon-btn" onclick="logout()" title="Sign Out">🚪</div>
+                        <div class="avatar-ring pulse-glow">
+                            <div class="avatar-inner">{{ current_user.username[0].upper() }}</div>
+                        </div>
+                    {% else %}
+                        <a class="btn-grad" href="{{ url_for('auth.login') }}">Sign In</a>
+                    {% endif %}
+                    <button class="burger" id="burgerBtn" onclick="toggleDrawer()" aria-label="Menu">
+                        <span></span><span></span><span></span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Mobile Bottom Navigation -->
+            <div class="bottom-nav" id="bottomNav">
+                <div class="bottom-nav-container">
+                    {% if current_user.is_authenticated %}
+                        <a class="bottom-nav-item{% if request.endpoint == 'main.dashboard' %} active{% endif %}" href="{{ url_for('main.dashboard') }}" title="Home">
+                            <div class="bottom-nav-icon">
+                              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="28" height="28" rx="7" fill="rgba(168,85,247,0.15)"/>
+                                <path d="M14 7L6 14H9V21H13V17H15V21H19V14H22L14 7Z" fill="url(#hg1)" filter="url(#hglow)"/>
+                                <defs>
+                                  <linearGradient id="hg1" x1="6" y1="7" x2="22" y2="21" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#A855F7"/>
+                                    <stop offset="100%" stop-color="#EC4899"/>
+                                  </linearGradient>
+                                  <filter id="hglow" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                  </filter>
+                                </defs>
+                              </svg>
+                            </div>
+                            <div class="bottom-nav-label">Home</div>
+                        </a>
+                        <a class="bottom-nav-item{% if request.endpoint and request.endpoint.startswith('chat') %} active{% endif %}" href="{{ url_for('main.dashboard') }}#chats" title="Chats">
+                            <div class="bottom-nav-icon">
+                              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="28" height="28" rx="7" fill="rgba(168,85,247,0.15)"/>
+                                <path d="M7 9C7 8.4 7.4 8 8 8H20C20.6 8 21 8.4 21 9V17C21 17.6 20.6 18 20 18H11L7 22V9Z" fill="url(#cg1)" filter="url(#cglow)"/>
+                                <circle cx="11" cy="13.5" r="1.2" fill="white" opacity="0.9"/>
+                                <circle cx="14" cy="13.5" r="1.2" fill="white" opacity="0.9"/>
+                                <circle cx="17" cy="13.5" r="1.2" fill="white" opacity="0.9"/>
+                                <defs>
+                                  <linearGradient id="cg1" x1="7" y1="8" x2="21" y2="22" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#A855F7"/>
+                                    <stop offset="100%" stop-color="#EC4899"/>
+                                  </linearGradient>
+                                  <filter id="cglow" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                  </filter>
+                                </defs>
+                              </svg>
+                            </div>
+                            <div class="bottom-nav-label">Chats</div>
+                        </a>
+                        <a class="bottom-nav-item{% if request.endpoint and request.endpoint.startswith('confession') %} active{% endif %}" href="{{ url_for('confession.index') }}" title="Void">
+                            <div class="bottom-nav-icon">
+                              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="28" height="28" rx="7" fill="rgba(168,85,247,0.15)"/>
+                                <circle cx="14" cy="14" r="4.5" fill="#0a0812"/>
+                                <path d="M14 4 C20 4, 24 9, 24 14 C24 19.5, 19 23, 14 23 C9 23, 5 19, 5.5 14 C6 9.5, 10 6, 14 7" 
+                                      fill="none" stroke="url(#vg1)" stroke-width="2.5" stroke-linecap="round"/>
+                                <path d="M14 6.5 C19 6.5, 22 11, 22 14 C22 18, 18.5 21, 14 21 C10 21, 7 18, 7.5 14" 
+                                      fill="none" stroke="url(#vg2)" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                                <circle cx="6" cy="7" r="0.8" fill="#A855F7" opacity="0.9"/>
+                                <circle cx="22" cy="6" r="0.6" fill="#EC4899" opacity="0.8"/>
+                                <circle cx="21" cy="22" r="0.9" fill="#A855F7" opacity="0.9"/>
+                                <defs>
+                                  <linearGradient id="vg1" x1="5" y1="14" x2="24" y2="14" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#7C3AED"/>
+                                    <stop offset="100%" stop-color="#F43F5E"/>
+                                  </linearGradient>
+                                  <linearGradient id="vg2" x1="7" y1="6" x2="22" y2="21" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#A855F7"/>
+                                    <stop offset="100%" stop-color="#EC4899"/>
+                                  </linearGradient>
+                                </defs>
+                              </svg>
+                            </div>
+                            <div class="bottom-nav-label">Void</div>
+                        </a>
+                        <a class="bottom-nav-item{% if request.endpoint == 'main.profile' %} active{% endif %}" href="{{ url_for('main.profile') }}" title="Profile">
+                            <div class="bottom-nav-icon">
+                              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect width="28" height="28" rx="7" fill="rgba(168,85,247,0.15)"/>
+                                <circle cx="14" cy="10.5" r="3.5" fill="url(#prg1)" filter="url(#prglow)"/>
+                                <path d="M7 22C7 19 10.1 16.5 14 16.5C17.9 16.5 21 19 21 22" stroke="url(#prg2)" stroke-width="2.5" stroke-linecap="round" fill="none" filter="url(#prglow)"/>
+                                <defs>
+                                  <linearGradient id="prg1" x1="10.5" y1="7" x2="17.5" y2="14" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#A855F7"/>
+                                    <stop offset="100%" stop-color="#EC4899"/>
+                                  </linearGradient>
+                                  <linearGradient id="prg2" x1="7" y1="19" x2="21" y2="22" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stop-color="#A855F7"/>
+                                    <stop offset="100%" stop-color="#EC4899"/>
+                                  </linearGradient>
+                                  <filter id="prglow" x="-30%" y="-30%" width="160%" height="160%">
+                                    <feGaussianBlur stdDeviation="1.2" result="blur"/>
+                                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                                  </filter>
+                                </defs>
+                              </svg>
+                            </div>
+                            <div class="bottom-nav-label">Profile</div>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="container-main scrollbar">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() { window.location.href = "{{ url_for('auth.logout') }}"; }
+        
+        // Update active bottom nav item
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentPath = window.location.pathname;
+            const navItems = document.querySelectorAll('.bottom-nav-item');
+            navItems.forEach(item => {
+                const href = item.getAttribute('href');
+                if (href && (currentPath.startsWith(href) || href === currentPath)) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

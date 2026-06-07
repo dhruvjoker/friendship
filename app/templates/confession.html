@@ -1,0 +1,660 @@
+{% extends "base_neon.html" %}
+
+{% block extra_css %}
+<style>
+/* ── Reset container-main padding for full-bleed page ── */
+.container-main {
+    padding: 0 !important;
+    overflow-x: hidden !important;
+}
+
+body { background: #0a0612 !important; }
+
+.void-shell {
+    min-height: 80svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Sans', sans-serif;
+    background:
+        radial-gradient(ellipse 70% 50% at 15% 20%, rgba(120,40,200,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 45% at 85% 80%, rgba(180,30,120,0.15) 0%, transparent 55%),
+        #0a0612;
+    /* Added 73px top padding to clear the fixed navbar (40px original + 73px navbar) */
+    padding: 113px 20px 60px 20px;
+    box-sizing: border-box;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 100%;
+    clip-path: inset(0);
+}
+
+@media (max-width: 600px) {
+    .void-shell {
+        min-height: 100svh;
+        padding: 103px 16px calc(80px + env(safe-area-inset-bottom, 0px));
+        justify-content: center;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        clip-path: inset(0);
+    }
+}
+
+/* Stars */
+.void-stars { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.star { position: absolute; border-radius: 50%; background: #fff; opacity: 0.3; animation: twinkle var(--d) ease-in-out infinite; }
+@keyframes twinkle { 0%,100%{opacity:.15} 50%{opacity:.8} }
+
+/* Floating orbs */
+.orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; animation: float var(--d) ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
+
+/* ── View states ── */
+.void-view {
+    width: min(100%, 520px);
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+.hidden { display: none !important; }
+
+/* ── Landing ── */
+.void-landing {
+    text-align: center;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.void-logo {
+    width: 80px; height: 80px; border-radius: 24px;
+    background: linear-gradient(135deg, #6d28d9, #db2777);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; margin: 0 auto 24px;
+    box-shadow: 0 0 60px rgba(109,40,217,0.5), 0 0 120px rgba(109,40,217,0.2);
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+@keyframes pulse-glow {
+    0%,100%{ box-shadow: 0 0 40px rgba(109,40,217,0.5); }
+    50%    { box-shadow: 0 0 80px rgba(109,40,217,0.8), 0 0 120px rgba(219,39,119,0.3); }
+}
+.void-headline {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 5vw, 2.6rem);
+    font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 12px;
+}
+.void-headline span {
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.void-sub {
+    font-size: 0.95rem; color: #b8cfe8;
+    margin-bottom: 36px; line-height: 1.6; max-width: 380px; width: 100%;
+}
+.void-btns { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; margin: 0 auto; }
+.void-btn-confess {
+    width: 100%; padding: 18px 24px; border-radius: 16px; border: none;
+    background: linear-gradient(135deg, #7C3AED, #DB2777);
+    color: #fff; font-family: 'DM Sans', sans-serif; font-size: 1.05rem; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 8px 32px rgba(124,58,237,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.void-btn-confess:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,58,237,0.5); }
+.void-btn-listen {
+    width: 100%; padding: 18px 24px; border-radius: 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #ecf4ff; font-family: 'DM Sans', sans-serif; font-size: 1.05rem; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+    transition: all 0.2s;
+}
+.void-btn-listen:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(168,85,247,0.4); }
+
+.void-stats {
+    display: flex; justify-content: center; gap: 48px; margin-top: 36px;
+}
+.void-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.void-stat-val {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #A855F7;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.void-stat-lbl {
+    font-size: 0.72rem;
+    color: #6b85a0;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ── Confess form ── */
+.void-card {
+    background: rgba(30, 10, 50, 0.75);
+    border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 24px; padding: 36px 32px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+}
+.void-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem; font-weight: 700; color: #fff; margin-bottom: 6px;
+}
+.void-card-sub {
+    font-size: 0.85rem; color: #8aa4bf; margin-bottom: 24px; line-height: 1.5;
+}
+.void-textarea {
+    width: 100%; box-sizing: border-box; min-height: 160px; resize: vertical;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(168,85,247,0.2);
+    border-radius: 16px; padding: 16px 18px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: #fff; line-height: 1.6;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.void-textarea::placeholder { color: #4a6070; }
+.void-textarea:focus { border-color: rgba(168,85,247,0.6); box-shadow: 0 0 0 3px rgba(168,85,247,0.1); }
+.void-char { font-size: 0.72rem; color: #6b85a0; text-align: right; margin: 6px 2px 20px; }
+.void-cast-btn {
+    width: 100%; padding: 16px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #7C3AED, #DB2777);
+    color: #fff; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700;
+    cursor: pointer; box-shadow: 0 6px 28px rgba(124,58,237,0.4);
+    transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.void-cast-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(124,58,237,0.55); }
+.void-cast-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.void-back {
+    margin-top: 14px; width: 100%; padding: 11px; border-radius: 12px;
+    background: transparent; border: 1px solid rgba(255,255,255,0.08);
+    color: #8aa4bf; font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; cursor: pointer; transition: all 0.2s;
+}
+.void-back:hover { border-color: #4a6070; color: #d0e4f5; }
+
+/* ── Waiting state ── */
+.void-waiting { text-align: center; }
+.void-orb-anim {
+    width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 28px;
+    background: radial-gradient(circle, rgba(168,85,247,0.8), rgba(219,39,119,0.4));
+    box-shadow: 0 0 60px rgba(168,85,247,0.6), 0 0 120px rgba(219,39,119,0.3);
+    animation: breathe 3s ease-in-out infinite;
+    display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+}
+@keyframes breathe {
+    0%,100%{ transform: scale(1); box-shadow: 0 0 40px rgba(168,85,247,0.5); }
+    50%    { transform: scale(1.08); box-shadow: 0 0 80px rgba(168,85,247,0.8), 0 0 140px rgba(219,39,119,0.4); }
+}
+.void-waiting-title { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+.void-waiting-sub { font-size: 0.9rem; color: #8aa4bf; line-height: 1.6; margin-bottom: 32px; }
+.void-dots { display: flex; justify-content: center; gap: 6px; margin-bottom: 32px; }
+.void-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: rgba(168,85,247,0.5);
+    animation: dot-pulse 1.4s ease-in-out infinite;
+}
+.void-dot:nth-child(2) { animation-delay: 0.2s; }
+.void-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot-pulse { 0%,80%,100%{transform:scale(0.6);opacity:.4} 40%{transform:scale(1);opacity:1} }
+
+/* ── Listen view ── */
+.void-letter {
+    background: rgba(30,10,50,0.75); border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 24px; padding: 36px 32px; backdrop-filter: blur(20px);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    animation: letter-in 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes letter-in { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+.void-letter-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+    font-size: 0.78rem; color: #6b85a0; font-weight: 500;
+}
+.void-letter-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: #A855F7;
+    box-shadow: 0 0 8px rgba(168,85,247,0.8);
+    animation: breathe 2s ease-in-out infinite;
+}
+.void-letter-content {
+    font-size: 1.05rem; color: #ecf4ff; line-height: 1.8;
+    margin-bottom: 28px; font-style: italic; min-height: 80px;
+}
+.void-letter-footer { display: flex; gap: 12px; }
+.void-btn-pass {
+    flex: 1; padding: 14px; border-radius: 14px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    color: #b8cfe8; font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.void-btn-pass:hover { background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.2); color: #F43F5E; }
+.void-btn-absolve {
+    flex: 1.5; padding: 14px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #7C3AED, #DB2777);
+    color: #fff; font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; font-weight: 700; cursor: pointer;
+    box-shadow: 0 6px 24px rgba(124,58,237,0.4); transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.void-btn-absolve:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(124,58,237,0.55); }
+.void-listen-empty { text-align: center; padding: 20px 0; }
+.void-listen-empty-icon { font-size: 3rem; margin-bottom: 16px; }
+.void-listen-empty-title { font-size: 1.2rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.void-listen-empty-sub { font-size: 0.88rem; color: #8aa4bf; margin-bottom: 24px; line-height: 1.6; }
+
+/* ── Alert/toast ── */
+.void-toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: rgba(30,10,50,0.96); border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 14px; padding: 14px 24px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: #fff;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.4); z-index: 9999;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap;
+}
+.void-toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── Mobile fixes ── */
+@media (max-width: 600px) {
+    .void-landing { padding-top: 10px; }
+    .void-logo { width: 64px; height: 64px; margin-bottom: 16px; }
+    .void-headline { font-size: 1.55rem; line-height: 1.25; }
+    .void-sub { font-size: 0.875rem; margin-bottom: 24px; padding: 0 4px; }
+
+    .void-btns {
+        max-width: 100%;
+        gap: 10px;
+    }
+    .void-btn-confess, .void-btn-listen {
+        padding: 15px 20px;
+        font-size: 0.95rem;
+    }
+
+    .void-stats { gap: 32px; margin-top: 24px; }
+    .void-stat-val { font-size: 1.3rem; }
+    .void-stat-lbl { font-size: 0.68rem; }
+
+    .void-card, .void-letter {
+        padding: 24px 20px;
+        border-radius: 20px;
+    }
+
+    .void-textarea { min-height: 130px; font-size: 0.95rem; }
+
+    .void-waiting { padding-top: 20px; }
+    .void-orb-anim { width: 80px; height: 80px; margin-bottom: 20px; }
+    .void-waiting-title { font-size: 1.15rem; }
+    .void-waiting-sub { font-size: 0.85rem; margin-bottom: 24px; }
+
+    .void-letter-footer { flex-direction: column; gap: 10px; }
+    .void-btn-pass, .void-btn-absolve { flex: unset; width: 100%; }
+
+    .void-toast {
+        left: 12px;
+        right: 12px;
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+        transform: translateY(80px);
+        white-space: normal;
+        text-align: center;
+    }
+    .void-toast.show { transform: translateY(0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="void-shell">
+    <!-- Stars -->
+    <div class="void-stars" id="stars"></div>
+    <!-- Orbs -->
+    <div class="orb" style="width:300px;height:300px;background:rgba(120,40,200,0.2);top:-80px;left:-80px;--d:7s;"></div>
+    <div class="orb" style="width:250px;height:250px;background:rgba(180,30,120,0.15);bottom:-60px;right:-60px;--d:9s;"></div>
+
+    <div class="void-view" id="viewWrapper">
+
+        <!-- ── LANDING ── -->
+        <div id="viewLanding" class="void-landing">
+            <div class="void-logo">
+                <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="80" height="80" style="border-radius:24px;">
+                  <rect width="80" height="80" rx="24" fill="#0D0B1A"/>
+                  <!-- Outer glow ring -->
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="url(#vlg1)" stroke-width="1" opacity="0.3"/>
+                  <!-- Spiral arms -->
+                  <path d="M40 10 C58 10, 70 24, 70 40 C70 57, 56 70, 40 70 C24 70, 12 57, 13 40 C14 24, 27 14, 40 16" 
+                        fill="none" stroke="url(#vlg2)" stroke-width="5" stroke-linecap="round"/>
+                  <path d="M40 15 C55 15, 65 27, 65 40 C65 54, 54 64, 40 64 C27 64, 17 53, 18 40 C19 28, 29 19, 40 21" 
+                        fill="none" stroke="url(#vlg3)" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+                  <path d="M40 20 C52 20, 60 30, 60 40 C60 51, 51 59, 40 59 C30 59, 22 51, 23 40" 
+                        fill="none" stroke="url(#vlg4)" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+                  <!-- Black hole center -->
+                  <circle cx="40" cy="40" r="12" fill="#04080F"/>
+                  <circle cx="40" cy="40" r="9" fill="#020508"/>
+                  <!-- Stars -->
+                  <g fill="#E879F9">
+                    <path d="M16 20 L17 23 L20 24 L17 25 L16 28 L15 25 L12 24 L15 23Z" opacity="0.9"/>
+                    <path d="M62 14 L62.8 16.5 L65.3 17.3 L62.8 18.1 L62 20.6 L61.2 18.1 L58.7 17.3 L61.2 16.5Z" opacity="0.85"/>
+                    <path d="M64 58 L64.7 60.2 L66.9 60.9 L64.7 61.6 L64 63.8 L63.3 61.6 L61.1 60.9 L63.3 60.2Z" opacity="0.9"/>
+                    <circle cx="20" cy="62" r="2" opacity="0.7"/>
+                    <circle cx="58" cy="68" r="1.5" fill="#A855F7" opacity="0.6"/>
+                  </g>
+                  <defs>
+                    <linearGradient id="vlg1" x1="12" y1="40" x2="68" y2="40" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#7C3AED"/>
+                      <stop offset="100%" stop-color="#EC4899"/>
+                    </linearGradient>
+                    <linearGradient id="vlg2" x1="10" y1="40" x2="70" y2="40" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#6D28D9"/>
+                      <stop offset="60%" stop-color="#A855F7"/>
+                      <stop offset="100%" stop-color="#F43F5E"/>
+                    </linearGradient>
+                    <linearGradient id="vlg3" x1="15" y1="15" x2="65" y2="64" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#8B5CF6"/>
+                      <stop offset="100%" stop-color="#EC4899"/>
+                    </linearGradient>
+                    <linearGradient id="vlg4" x1="22" y1="20" x2="60" y2="59" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#C084FC"/>
+                      <stop offset="100%" stop-color="#F472B6"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+            </div>
+            <h1 class="void-headline">Cast your secret<br><span>into the Void</span></h1>
+            <p class="void-sub">Anonymous. Ephemeral. Safe. Someone out there is listening — and they won't judge you.</p>
+            <div class="void-btns">
+                <button class="void-btn-confess" onclick="showView('viewConfess')" style="display:inline-flex;align-items:center;justify-content:center;gap:10px;">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="#0a0812"/><path d="M10 2C14.5 2,18 5.5,18 10C18 14.8,14.2 18,10 18C5.8 18,2 14.2,2.3 10C2.6 6,5.8 3,10 4" fill="none" stroke="url(#vbc1)" stroke-width="2.5" stroke-linecap="round"/><circle cx="4" cy="5" r="0.9" fill="#E879F9" opacity="0.9"/><circle cx="16" cy="4" r="0.7" fill="#A855F7" opacity="0.8"/><defs><linearGradient id="vbc1" x1="2" y1="10" x2="18" y2="10" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#F43F5E"/></linearGradient></defs></svg>
+                    Confess a Secret
+                </button>
+                <button class="void-btn-listen" onclick="startListening()">
+                    👂 Listen to a Secret
+                </button>
+            </div>
+            <div class="void-stats">
+                <div class="void-stat-item">
+                    <div class="void-stat-val" id="statWaiting">{{ waiting_count | default(0) }}</div>
+                    <div class="void-stat-lbl">Waiting</div>
+                </div>
+                <div class="void-stat-item">
+                    <div class="void-stat-val" id="statTotal">{{ absolved_count | default(0) }}</div>
+                    <div class="void-stat-lbl">Absolved</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── CONFESS ── -->
+        <div id="viewConfess" class="hidden">
+            <div class="void-card">
+                <div class="void-card-title"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="vertical-align:middle;margin-right:6px"><circle cx="8" cy="8" r="2.4" fill="#0a0812"/><path d="M8 1.5C11.5 1.5,14.5 4,14.5 8C14.5 12.1,11.4 14.5,8 14.5C4.6 14.5,1.5 12,1.7 8C2 4.5,4.6 2,8 3" fill="none" stroke="url(#vct1)" stroke-width="2" stroke-linecap="round"/><defs><linearGradient id="vct1" x1="1.5" y1="8" x2="14.5" y2="8" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs></svg>Your Secret</div>
+                <div class="void-card-sub">Write what you've been holding in. It will drift anonymously to a Listener in the Void.</div>
+                <textarea class="void-textarea" id="confessionText"
+                    placeholder="I've been secretly…" maxlength="1000"
+                    oninput="updateChar()"></textarea>
+                <div class="void-char"><span id="charCount">0</span> / 1000</div>
+                <button class="void-cast-btn" id="castBtn" onclick="castConfession()" style="display:inline-flex;align-items:center;justify-content:center;gap:10px;">
+                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="2.7" fill="#0a0812"/><path d="M9 1.5C13 1.5,16.5 4.5,16.5 9C16.5 13.6,13 16.5,9 16.5C5 16.5,1.5 13.4,1.8 9C2.1 5.2,5.2 2.5,9 3.3" fill="none" stroke="url(#vcb1)" stroke-width="2.2" stroke-linecap="round"/><circle cx="3.5" cy="4.5" r="0.8" fill="#E879F9" opacity="0.9"/><circle cx="14.5" cy="3.5" r="0.6" fill="#A855F7" opacity="0.8"/><defs><linearGradient id="vcb1" x1="1.5" y1="9" x2="16.5" y2="9" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#F43F5E"/></linearGradient></defs></svg>
+                    Cast into the Void
+                </button>
+                <button class="void-back" onclick="showView('viewLanding')">← Back</button>
+            </div>
+        </div>
+
+        <!-- ── WAITING ── -->
+        <div id="viewWaiting" class="hidden void-waiting">
+            <div class="void-orb-anim">
+                <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="36" cy="36" r="10" fill="#04080F"/>
+                  <circle cx="36" cy="36" r="7.5" fill="#020508"/>
+                  <path d="M36 8C50 8,62 20,62 36C62 52.5,50 64,36 64C22 64,10 52,11 36C12 21,23 11,36 13" 
+                        fill="none" stroke="url(#oag1)" stroke-width="5" stroke-linecap="round"/>
+                  <path d="M36 13C48 13,58 23,58 36C58 49.5,48 58,36 58C24 58,14.5 49,15.5 36C16.5 24,26 15.5,36 17.5" 
+                        fill="none" stroke="url(#oag2)" stroke-width="3" stroke-linecap="round" opacity="0.65"/>
+                  <path d="M36 18C46 18,53.5 26,53.5 36C53.5 46.5,46 54,36 54C27 54,19.5 46.5,20.5 36" 
+                        fill="none" stroke="url(#oag3)" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/>
+                  <g fill="#E879F9">
+                    <path d="M14 17 L14.8 19.4 L17.2 20.2 L14.8 21 L14 23.4 L13.2 21 L10.8 20.2 L13.2 19.4Z" opacity="0.9"/>
+                    <path d="M57 12 L57.7 14.1 L59.8 14.8 L57.7 15.5 L57 17.6 L56.3 15.5 L54.2 14.8 L56.3 14.1Z" opacity="0.85"/>
+                    <path d="M60 53 L60.6 55 L62.6 55.6 L60.6 56.2 L60 58.2 L59.4 56.2 L57.4 55.6 L59.4 55Z" opacity="0.9"/>
+                    <circle cx="18" cy="57" r="1.8" opacity="0.7"/>
+                  </g>
+                  <defs>
+                    <linearGradient id="oag1" x1="10" y1="36" x2="62" y2="36" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#6D28D9"/>
+                      <stop offset="60%" stop-color="#A855F7"/>
+                      <stop offset="100%" stop-color="#F43F5E"/>
+                    </linearGradient>
+                    <linearGradient id="oag2" x1="15" y1="13" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#8B5CF6"/>
+                      <stop offset="100%" stop-color="#EC4899"/>
+                    </linearGradient>
+                    <linearGradient id="oag3" x1="20" y1="18" x2="53.5" y2="54" gradientUnits="userSpaceOnUse">
+                      <stop offset="0%" stop-color="#C084FC"/>
+                      <stop offset="100%" stop-color="#F472B6"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+            </div>
+            <div class="void-waiting-title">Drifting through the Void…</div>
+            <div class="void-waiting-sub">Your confession has been sent to a Listener.<br>Sit tight — someone is reading your words.</div>
+            <div class="void-dots">
+                <div class="void-dot"></div>
+                <div class="void-dot"></div>
+                <div class="void-dot"></div>
+            </div>
+            <button class="void-back" onclick="showView('viewLanding')">← Return to the Void</button>
+        </div>
+
+        <!-- ── LISTEN ── -->
+        <div id="viewListen" class="hidden">
+            <!-- Empty state -->
+            <div id="listenEmpty" class="void-card hidden">
+                <div class="void-listen-empty">
+                    <div class="void-listen-empty-icon">🌌</div>
+                    <div class="void-listen-empty-title">The Void is quiet…</div>
+                    <div class="void-listen-empty-sub">No confessions are waiting right now.<br>Check back soon — the Void is always filling.</div>
+                    <button class="void-btn-listen" onclick="startListening()" style="margin:0 auto;max-width:220px;">
+                        🔄 Try Again
+                    </button>
+                </div>
+                <button class="void-back" onclick="showView('viewLanding')" style="margin-top:14px;">← Back</button>
+            </div>
+            <!-- Letter -->
+            <div id="listenLetter" class="void-letter hidden">
+                <div class="void-letter-header">
+                    <div class="void-letter-dot"></div>
+                    <span>A secret from the Void</span>
+                    <span style="margin-left:auto;" id="letterAge"></span>
+                </div>
+                <div class="void-letter-content" id="letterContent"></div>
+                <div class="void-letter-footer">
+                    <button class="void-btn-pass" onclick="passConfession()">
+                        ❌ Pass
+                    </button>
+                    <button class="void-btn-absolve" onclick="absolveConfession()">
+                        💬 Absolve & Connect
+                    </button>
+                </div>
+                <button class="void-back" onclick="showView('viewLanding')" style="margin-top:14px;">← Back to the Void</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="void-toast" id="voidToast"></div>
+
+<script>
+let currentConfessionId = null;
+let waitingPollTimer = null;
+
+function startWaitingPoll(confessionId) {
+    if (waitingPollTimer) clearInterval(waitingPollTimer);
+    waitingPollTimer = setInterval(async () => {
+        try {
+            const r = await fetch(`/confession/status/${confessionId}`);
+            const d = await r.json();
+            if (d.absolved && d.chat_user_id) {
+                clearInterval(waitingPollTimer);
+                waitingPollTimer = null;
+                toast('✨ Someone heard you! Opening chat…');
+                setTimeout(() => {
+                    window.location.href = '/api/chat/chat/' + d.chat_user_id;
+                }, 1200);
+            }
+        } catch(e) { /* silent — keep polling */ }
+    }, 4000);
+}
+
+// ── Stars ────────────────────────────────────────────────────────────────────
+(function() {
+    const el = document.getElementById('stars');
+    for (let i = 0; i < 80; i++) {
+        const s = document.createElement('div');
+        const sz = Math.random() * 2.5 + 0.5;
+        s.className = 'star';
+        s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s;`;
+        el.appendChild(s);
+    }
+})();
+
+// ── View switching ────────────────────────────────────────────────────────────
+function showView(id) {
+    ['viewLanding','viewConfess','viewWaiting','viewListen'].forEach(v => {
+        document.getElementById(v).classList.add('hidden');
+    });
+    document.getElementById(id).classList.remove('hidden');
+    // Stop polling if navigating away from the waiting screen
+    if (id !== 'viewWaiting' && waitingPollTimer) {
+        clearInterval(waitingPollTimer);
+        waitingPollTimer = null;
+    }
+}
+
+// ── Char counter ─────────────────────────────────────────────────────────────
+function updateChar() {
+    document.getElementById('charCount').textContent =
+        document.getElementById('confessionText').value.length;
+}
+
+// ── Cast confession ───────────────────────────────────────────────────────────
+async function castConfession() {
+    const content = document.getElementById('confessionText').value.trim();
+    if (!content) { toast('Write something first…'); return; }
+    const btn = document.getElementById('castBtn');
+    btn.disabled = true; btn.textContent = 'Casting…';
+    try {
+        const r = await fetch('{{ url_for("confession.cast") }}', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({content})
+        });
+        const d = await r.json();
+        if (d.success) {
+            currentConfessionId = d.confession_id;
+            showView('viewWaiting');
+            startWaitingPoll(d.confession_id);
+            document.getElementById('confessionText').value = '';
+            updateChar();
+        } else {
+            toast(d.error || 'Something went wrong');
+            btn.disabled = false; btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="vertical-align:middle;margin-right:8px"><circle cx="9" cy="9" r="2.7" fill="#0a0812"/><path d="M9 1.5C13 1.5,16.5 4.5,16.5 9C16.5 13.6,13 16.5,9 16.5C5 16.5,1.5 13.4,1.8 9C2.1 5.2,5.2 2.5,9 3.3" fill="none" stroke="url(#vcb1)" stroke-width="2.2" stroke-linecap="round"/><defs><linearGradient id="vcb1" x1="1.5" y1="9" x2="16.5" y2="9" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#F43F5E"/></linearGradient></defs></svg>Cast into the Void';
+        }
+    } catch(e) {
+        toast('Network error — try again'); btn.disabled = false;
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="vertical-align:middle;margin-right:8px"><circle cx="9" cy="9" r="2.7" fill="#0a0812"/><path d="M9 1.5C13 1.5,16.5 4.5,16.5 9C16.5 13.6,13 16.5,9 16.5C5 16.5,1.5 13.4,1.8 9C2.1 5.2,5.2 2.5,9 3.3" fill="none" stroke="url(#vcb1)" stroke-width="2.2" stroke-linecap="round"/><defs><linearGradient id="vcb1" x1="1.5" y1="9" x2="16.5" y2="9" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#F43F5E"/></linearGradient></defs></svg>Cast into the Void';
+    }
+}
+
+// ── Start listening ───────────────────────────────────────────────────────────
+async function startListening() {
+    showView('viewListen');
+    document.getElementById('listenEmpty').classList.add('hidden');
+    document.getElementById('listenLetter').classList.add('hidden');
+    try {
+        const r = await fetch('{{ url_for("confession.listen") }}', { method: 'GET' });
+        if (!r.ok) {
+            toast('Could not reach the Void — try again');
+            showView('viewLanding');
+            return;
+        }
+        const d = await r.json();
+        if (d.empty) {
+            document.getElementById('listenEmpty').classList.remove('hidden');
+        } else {
+            currentConfessionId = d.confession_id;
+            document.getElementById('letterContent').textContent = '"' + d.content + '"';
+            document.getElementById('letterAge').textContent = d.age;
+            document.getElementById('listenLetter').classList.remove('hidden');
+        }
+    } catch(e) {
+        console.error('Listen error:', e);
+        toast('Could not reach the Void — try again');
+        showView('viewLanding');
+    }
+}
+
+// ── Pass ──────────────────────────────────────────────────────────────────────
+async function passConfession() {
+    if (!currentConfessionId) return;
+    const letter = document.getElementById('listenLetter');
+    letter.style.opacity = '0'; letter.style.transform = 'translateY(-20px)';
+    letter.style.transition = 'all 0.4s';
+    await fetch(`/confession/pass/${currentConfessionId}`, {method:'POST', headers:{'Content-Type':'application/json'}});
+    setTimeout(() => {
+        letter.style.opacity = ''; letter.style.transform = '';
+        letter.style.transition = '';
+        startListening();
+    }, 400);
+}
+
+// ── Absolve ───────────────────────────────────────────────────────────────────
+async function absolveConfession() {
+    if (!currentConfessionId) return;
+    const btn = document.querySelector('.void-btn-absolve');
+    btn.disabled = true; btn.textContent = 'Connecting…';
+    try {
+        const r = await fetch(`/confession/absolve/${currentConfessionId}`, {method:'POST', headers:{'Content-Type':'application/json'}});
+        const d = await r.json();
+        if (d.success) {
+            toast('✨ Connected! Opening chat…');
+            setTimeout(() => {
+                window.location.href = '/api/chat/chat/' + d.chat_user_id;
+            }, 1200);
+        } else {
+            toast(d.error || 'Could not connect');
+            btn.disabled = false; btn.textContent = '💬 Absolve & Connect';
+        }
+    } catch(e) {
+        toast('Network error'); btn.disabled = false;
+        btn.textContent = '💬 Absolve & Connect';
+    }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg) {
+    const t = document.getElementById('voidToast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Load stats ────────────────────────────────────────────────────────────────
+(async function loadStats() {
+    try {
+        // Fetch confession statistics
+        const url = '{{ url_for("confession.index") }}' + '/stats';
+        const r = await fetch(url).catch(() => null);
+        // Stats loading is optional, so failures are silent
+    } catch(e) {
+        console.log('Stats load skipped');
+    }
+})();
+</script>
+{% endblock %}

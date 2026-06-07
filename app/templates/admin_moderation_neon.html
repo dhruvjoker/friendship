@@ -1,0 +1,77 @@
+{% extends "base_neon.html" %}
+
+{% block content %}
+<div class="page active">
+    <div class="section-title" style="margin-bottom: 24px;">
+        🛡️ Moderation Queue
+        <span class="pill pill-purple">{{ reports|length + safety_events|length }} Pending</span>
+    </div>
+
+    <div class="grid-2" style="margin-bottom: 24px;">
+        <!-- REPORTS SECTION -->
+        <div class="card">
+            <div class="section-title" style="margin-bottom: 16px;">📋 User Reports</div>
+            {% if reports %}
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for row in reports %}
+                        <div style="border: 1px solid rgba(168,85,247,0.2); border-radius: 14px; padding: 14px; background: rgba(168,85,247,0.06);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 600; font-size: 13px;">{{ row.report.reason }}</span>
+                                <span class="pill" style="background: rgba(244,63,94,0.12); color: #F43F5E;">{{ row.report.status }}</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">
+                                <div>From: <strong>{{ row.reporter_name }}</strong></div>
+                                <div>Target: <strong>{{ row.target_name }}</strong></div>
+                            </div>
+                            <p style="font-size: 12px; margin-bottom: 10px;">{{ row.report.details }}</p>
+                            <form method="POST" action="{{ url_for('main.review_admin_report', report_id=row.report.id) }}" style="display: flex; gap: 8px;">
+                                <input type="text" name="resolution" placeholder="Resolution note" value="Reviewed and closed" style="flex: 1; padding: 8px 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text); font-size: 12px;">
+                                <button type="submit" name="decision" value="resolved" class="btn-grad" style="padding: 8px 12px; font-size: 12px;">Resolve</button>
+                                <button type="submit" name="decision" value="dismissed" style="padding: 8px 12px; font-size: 12px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-radius: 8px; cursor: pointer;">Dismiss</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 32px; color: var(--muted);">
+                    <div style="font-size: 28px; margin-bottom: 8px;">✓</div>
+                    <div style="font-size: 13px;">No pending reports</div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- SAFETY FLAGS SECTION -->
+        <div class="card">
+            <div class="section-title" style="margin-bottom: 16px;">⚠️ Safety Flags</div>
+            {% if safety_events %}
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    {% for row in safety_events %}
+                        <div style="border: 1px solid rgba(236,72,153,0.2); border-radius: 14px; padding: 14px; background: rgba(236,72,153,0.06);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span style="font-weight: 600; font-size: 13px;">{{ row.event.severity | upper }} - {{ row.event.event_type }}</span>
+                                <span class="pill" style="background: rgba(236,72,153,0.12); color: var(--pink);">{{ row.event.review_status }}</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">
+                                User: <strong>{{ row.user_name }}</strong>
+                            </div>
+                            <p style="font-size: 12px; margin-bottom: 10px;">{{ row.event.details }}</p>
+                            <form method="POST" action="{{ url_for('main.review_admin_event', event_id=row.event.id) }}" style="display: flex; gap: 8px;">
+                                <button type="submit" name="decision" value="reviewed" class="btn-grad" style="flex: 1; padding: 8px 12px; font-size: 12px;">Mark Reviewed</button>
+                                <button type="submit" name="decision" value="dismissed" style="flex: 1; padding: 8px 12px; font-size: 12px; background: var(--card); border: 1px solid var(--card-border); color: var(--text); border-radius: 8px; cursor: pointer;">Dismiss</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 32px; color: var(--muted);">
+                    <div style="font-size: 28px; margin-bottom: 8px;">✓</div>
+                    <div style="font-size: 13px;">No safety flags right now</div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- BACK BUTTON -->
+    <button class="btn-grad" onclick="window.location.href='{{ url_for('main.dashboard') }}'">← Back to Dashboard</button>
+</div>
+{% endblock %}

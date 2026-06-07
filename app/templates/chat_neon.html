@@ -1,0 +1,1510 @@
+{% extends "base_neon.html" %}
+
+{% block extra_css %}
+<style>
+/* ══════════════════════════════════════════════
+   SPHINX CHAT — Cosmic Encrypted Messenger
+   Redesigned to match the Sphinx design system
+══════════════════════════════════════════════ */
+
+/* ── Reset container-main padding for full-bleed chat ── */
+.container-main {
+    padding: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* ── Root layout ── */
+.chat-root {
+    display: flex;
+    height: calc(100vh - 73px);
+    overflow: hidden;
+    font-family: 'DM Sans', sans-serif;
+    background: #040B1B;
+    position: relative;
+}
+
+/* Ambient nebula background */
+.chat-root::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 50% 40% at 15% 20%, rgba(168,85,247,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 35% at 85% 75%, rgba(236,72,153,0.06) 0%, transparent 55%),
+        radial-gradient(ellipse 30% 25% at 60% 10%, rgba(124,58,237,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Floating star particles */
+.chat-root::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+        radial-gradient(1px 1px at 12% 18%, rgba(168,85,247,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 38% 7%, rgba(236,72,153,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 62% 22%, rgba(255,255,255,0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 87% 11%, rgba(168,85,247,0.2) 0%, transparent 100%),
+        radial-gradient(1.5px 1.5px at 48% 44%, rgba(236,72,153,0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 74% 81%, rgba(168,85,247,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 23% 65%, rgba(255,255,255,0.15) 0%, transparent 100%),
+        radial-gradient(1px 1px at 94% 53%, rgba(236,72,153,0.2) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+    animation: starDrift 80s linear infinite;
+}
+
+@keyframes starDrift {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-60px); }
+}
+
+/* ══════════════
+   LEFT — CONTACTS PANEL
+══════════════ */
+.contacts-panel {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: rgba(13,11,26,0.85);
+    backdrop-filter: blur(24px);
+    border-right: 1px solid rgba(168,85,247,0.12);
+    position: relative;
+    z-index: 10;
+}
+
+/* Top header bar */
+.contacts-top {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(168,85,247,0.08);
+    flex-shrink: 0;
+}
+
+.contacts-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contacts-title svg {
+    flex-shrink: 0;
+}
+
+/* Search */
+.search-wrap {
+    position: relative;
+}
+.search-wrap input {
+    width: 100%;
+    background: rgba(168,85,247,0.06);
+    border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 12px;
+    padding: 10px 14px 10px 38px;
+    color: #F1EEF9;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .25s, box-shadow .25s;
+}
+.search-wrap input::placeholder { color: rgba(241,238,249,0.25); }
+.search-wrap input:focus {
+    border-color: rgba(168,85,247,0.4);
+    box-shadow: 0 0 16px rgba(168,85,247,0.1);
+}
+.search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.35;
+}
+
+/* Contact list */
+.contact-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+.contact-list::-webkit-scrollbar { width: 3px; }
+.contact-list::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.2); border-radius: 3px; }
+
+/* Individual contact row */
+.contact-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    cursor: pointer;
+    position: relative;
+    transition: all .2s;
+    border-left: 3px solid transparent;
+}
+.contact-row::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(168,85,247,0.06) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+}
+.contact-row:hover::after { opacity: 1; }
+.contact-row:hover { border-left-color: rgba(168,85,247,0.4); }
+.contact-row.active {
+    background: rgba(168,85,247,0.08);
+    border-left-color: #A855F7;
+}
+.contact-row.active::after { opacity: 1; }
+
+/* Avatar */
+.contact-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(168,85,247,0.25);
+    transition: box-shadow .2s;
+}
+.contact-row:hover .contact-avatar {
+    box-shadow: 0 4px 18px rgba(168,85,247,0.4);
+}
+.contact-avatar::after {
+    content: '';
+    position: absolute;
+    width: 10px; height: 10px;
+    bottom: -2px; right: -2px;
+    border-radius: 50%;
+    background: #4ade80;
+    border: 2px solid #0D0B1A;
+}
+
+.contact-info { flex: 1; min-width: 0; }
+.contact-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #F1EEF9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+}
+.contact-preview {
+    font-size: 12px;
+    color: rgba(241,238,249,0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.contact-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    flex-shrink: 0;
+}
+.contact-time {
+    font-size: 10px;
+    color: rgba(168,85,247,0.5);
+    font-weight: 500;
+}
+.contact-badge {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(168,85,247,0.4);
+}
+
+/* Empty state */
+.contacts-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 40px 20px;
+    text-align: center;
+}
+.contacts-empty svg {
+    opacity: 0.15;
+    margin-bottom: 4px;
+}
+.contacts-empty p {
+    color: rgba(241,238,249,0.25);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* ══════════════
+   RIGHT — CHAT CHAMBER
+══════════════ */
+.chat-chamber {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(23,19,38,0.6) 0%, transparent 70%);
+    position: relative;
+    z-index: 5;
+}
+
+/* ── Chat Header ── */
+.chat-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+    background: rgba(13,11,26,0.8);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(168,85,247,0.1);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 20;
+    min-height: 68px;
+}
+
+.chat-back {
+    display: none;
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    background: rgba(168,85,247,0.08);
+    border: 1px solid rgba(168,85,247,0.15);
+    color: #A855F7;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+}
+.chat-back:hover { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); }
+
+.chat-header-avatar {
+    width: 42px; height: 42px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 0 4px 14px rgba(168,85,247,0.3);
+}
+.chat-header-avatar::after {
+    content: '';
+    position: absolute;
+    width: 10px; height: 10px;
+    bottom: -2px; right: -2px;
+    border-radius: 50%;
+    background: #4ade80;
+    border: 2px solid #0D0B1A;
+}
+
+.chat-header-info { flex: 1; min-width: 0; }
+.chat-header-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #F1EEF9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.chat-header-status {
+    font-size: 11px;
+    color: rgba(168,85,247,0.55);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.chat-header-status::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    box-shadow: 0 0 6px rgba(74,222,128,0.6);
+    animation: statusPulse 2s ease-in-out infinite;
+}
+@keyframes statusPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.chat-header-actions { display: flex; gap: 8px; }
+.chat-hbtn {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: rgba(168,85,247,0.06);
+    border: 1px solid rgba(168,85,247,0.1);
+    color: rgba(241,238,249,0.4);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+}
+.chat-hbtn:hover {
+    background: rgba(168,85,247,0.12);
+    border-color: rgba(168,85,247,0.3);
+    color: #A855F7;
+    box-shadow: 0 0 12px rgba(168,85,247,0.15);
+}
+.chat-hbtn.danger:hover {
+    background: rgba(244,63,94,0.1);
+    border-color: rgba(244,63,94,0.25);
+    color: #F43F5E;
+    box-shadow: 0 0 12px rgba(244,63,94,0.1);
+}
+
+/* ── Empty State (no chat selected) ── */
+.chat-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    padding: 40px;
+    position: relative;
+    z-index: 1;
+}
+.chat-empty-orb {
+    width: 90px; height: 90px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(236,72,153,0.1));
+    border: 1px solid rgba(168,85,247,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: emptyPulse 3s ease-in-out infinite;
+    box-shadow: 0 0 40px rgba(168,85,247,0.15);
+}
+@keyframes emptyPulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(168,85,247,0.15); }
+    50% { transform: scale(1.04); box-shadow: 0 0 60px rgba(168,85,247,0.25); }
+}
+.chat-empty-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #A855F7, #EC4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.chat-empty-sub {
+    font-size: 13px;
+    color: rgba(241,238,249,0.3);
+    max-width: 260px;
+    line-height: 1.7;
+}
+
+/* ── Messages Thread ── */
+.chat-thread {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 28px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    z-index: 1;
+}
+.chat-thread::-webkit-scrollbar { width: 3px; }
+.chat-thread::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.15); border-radius: 3px; }
+
+/* Date divider */
+.thread-date {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 18px 0 14px;
+}
+.thread-date::before,
+.thread-date::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(168,85,247,0.12), transparent);
+}
+.thread-date span {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(168,85,247,0.4);
+    padding: 4px 14px;
+    background: rgba(168,85,247,0.06);
+    border: 1px solid rgba(168,85,247,0.1);
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ── Message Bubble ── */
+.msg-card {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 16px;
+    animation: msgAppear .3s cubic-bezier(.2,.8,.3,1) both;
+    position: relative;
+}
+@keyframes msgAppear {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.msg-card.own {
+    flex-direction: row-reverse;
+}
+
+/* Avatar bubble */
+.msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(168,85,247,0.3), rgba(236,72,153,0.2));
+    border: 1px solid rgba(168,85,247,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px; font-weight: 700;
+    flex-shrink: 0;
+}
+.msg-card:not(.own) .msg-avatar { color: #C084FC; }
+.msg-card.own .msg-avatar { display: none; }
+
+/* Message body */
+.msg-body {
+    flex: 1;
+    min-width: 0;
+    max-width: 65%;
+}
+
+/* Glass bubble */
+.msg-glass {
+    padding: 12px 16px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .15s;
+}
+.msg-card:hover .msg-glass { transform: translateY(-1px); }
+
+.msg-card:not(.own) .msg-glass {
+    background: rgba(168,85,247,0.08);
+    border: 1px solid rgba(168,85,247,0.14);
+    border-radius: 4px 18px 18px 18px;
+    box-shadow: 0 4px 20px rgba(168,85,247,0.06);
+}
+
+.msg-card.own .msg-glass {
+    background: linear-gradient(135deg, rgba(168,85,247,0.12), rgba(236,72,153,0.08));
+    border: 1px solid rgba(236,72,153,0.18);
+    border-radius: 18px 4px 18px 18px;
+    box-shadow: 0 4px 20px rgba(236,72,153,0.06);
+}
+
+/* Shimmer effect */
+.msg-glass::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+    transition: left .6s;
+}
+.msg-card:hover .msg-glass::before { left: 160%; }
+
+/* Top accent border */
+.msg-glass::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+}
+.msg-card:not(.own) .msg-glass::after {
+    background: linear-gradient(90deg, rgba(168,85,247,0.3), transparent);
+}
+.msg-card.own .msg-glass::after {
+    background: linear-gradient(90deg, transparent, rgba(236,72,153,0.3));
+}
+
+/* Message text */
+.msg-text {
+    font-size: 14px;
+    line-height: 1.65;
+    color: rgba(241,238,249,0.88);
+    word-break: break-word;
+    position: relative;
+    z-index: 1;
+}
+
+/* Meta (timestamp) */
+.msg-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 10px;
+    color: rgba(241,238,249,0.2);
+    font-weight: 500;
+}
+.msg-card.own .msg-meta { justify-content: flex-end; }
+
+/* Read receipt */
+.msg-read {
+    display: flex;
+    gap: 1px;
+}
+.msg-read svg { width: 12px; height: 12px; }
+.msg-card.own .msg-read svg { color: #A855F7; }
+
+/* Typing indicator */
+.typing-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 16px;
+    animation: msgAppear .3s ease both;
+}
+.typing-bubble {
+    background: rgba(168,85,247,0.07);
+    border: 1px solid rgba(168,85,247,0.12);
+    border-radius: 4px 18px 18px 18px;
+    padding: 14px 18px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+.typing-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(168,85,247,0.5);
+    animation: typeBounce 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: .15s; background: rgba(236,72,153,0.5); }
+.typing-dot:nth-child(3) { animation-delay: .3s; background: rgba(192,132,252,0.5); }
+@keyframes typeBounce {
+    0%, 60%, 100% { transform: translateY(0) scale(1); opacity: 0.5; }
+    30% { transform: translateY(-6px) scale(1.15); opacity: 1; }
+}
+
+/* ── Emoji Panel ── */
+.emoji-panel {
+    display: none;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 10px 24px;
+    border-top: 1px solid rgba(168,85,247,0.08);
+    background: rgba(13,11,26,0.9);
+    backdrop-filter: blur(12px);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+.emoji-panel.open { display: flex; }
+.emoji-item {
+    font-size: 20px;
+    padding: 5px 7px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .14s, transform .14s;
+    line-height: 1;
+}
+.emoji-item:hover { background: rgba(168,85,247,0.12); transform: scale(1.2); }
+
+/* ── Input Bar ── */
+.input-bar {
+    padding: 12px 24px 16px;
+    border-top: 1px solid rgba(168,85,247,0.1);
+    background: rgba(13,11,26,0.92);
+    backdrop-filter: blur(24px);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.input-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(168,85,247,0.3);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.input-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(168,85,247,0.15), transparent);
+}
+
+.input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.input-icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: rgba(168,85,247,0.06);
+    border: 1px solid rgba(168,85,247,0.12);
+    color: rgba(241,238,249,0.35);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-bottom: 3px;
+    transition: all .2s;
+}
+.input-icon-btn:hover {
+    border-color: rgba(168,85,247,0.35);
+    color: #A855F7;
+    background: rgba(168,85,247,0.1);
+}
+
+.input-wrap {
+    flex: 1;
+    background: rgba(168,85,247,0.04);
+    border: 1px solid rgba(168,85,247,0.15);
+    border-radius: 4px 16px 16px 16px;
+    padding: 11px 16px;
+    transition: border-color .25s, box-shadow .25s;
+    position: relative;
+    min-height: 46px;
+    display: flex;
+    align-items: flex-end;
+}
+.input-wrap::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(168,85,247,0.2), transparent 60%);
+    border-radius: 4px 16px 0 0;
+}
+.input-wrap:focus-within {
+    border-color: rgba(168,85,247,0.35);
+    box-shadow: 0 0 20px rgba(168,85,247,0.08);
+}
+.input-textarea {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #F1EEF9;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    max-height: 120px;
+    overflow-y: auto;
+}
+.input-textarea::placeholder { color: rgba(241,238,249,0.2); }
+.input-textarea::-webkit-scrollbar { width: 2px; }
+.input-textarea::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.2); }
+
+/* Send button */
+.send-btn {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #7C3AED, #EC4899);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    transition: all .22s;
+    box-shadow: 0 4px 20px rgba(168,85,247,0.35);
+}
+.send-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity .2s;
+}
+.send-btn:hover {
+    box-shadow: 0 6px 28px rgba(168,85,247,0.5);
+    transform: translateY(-2px);
+}
+.send-btn:hover::before { opacity: 1; }
+.send-btn:active { transform: scale(0.94); }
+.send-btn:disabled { opacity: .3; transform: none; cursor: default; box-shadow: none; }
+
+/* ══════════════
+   REPORT MODAL
+══════════════ */
+.report-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    align-items: center; justify-content: center;
+}
+.report-overlay.open { display: flex; }
+.report-bg {
+    position: absolute; inset: 0;
+    background: rgba(4,11,27,0.85);
+    backdrop-filter: blur(16px);
+}
+.report-modal {
+    position: relative; z-index: 1;
+    width: 90%; max-width: 400px;
+    background: linear-gradient(145deg, #171326, #1a1035);
+    border: 1px solid rgba(244,63,94,0.2);
+    border-radius: 4px 24px 24px 24px;
+    padding: 28px;
+    box-shadow: 0 0 60px rgba(244,63,94,0.08), 0 24px 64px rgba(0,0,0,0.6);
+    animation: modalSlide .25s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes modalSlide {
+    from { opacity:0; transform:scale(.93) translateY(12px); }
+    to { opacity:1; transform:scale(1) translateY(0); }
+}
+.report-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #F43F5E;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.report-modal select, .report-modal textarea {
+    width: 100%;
+    background: rgba(244,63,94,0.04);
+    border: 1px solid rgba(244,63,94,0.15);
+    border-radius: 4px 14px 14px 14px;
+    padding: 11px 14px;
+    color: #F1EEF9;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    outline: none; margin-bottom: 12px;
+    transition: border-color .2s;
+}
+.report-modal select option { background: #171326; }
+.report-modal select:focus, .report-modal textarea:focus { border-color: rgba(244,63,94,0.4); }
+.report-modal textarea { resize: none; height: 72px; }
+.report-modal textarea::placeholder { color: rgba(241,238,249,0.2); }
+.report-actions { display: flex; gap: 10px; margin-top: 4px; }
+.report-cancel {
+    flex: 1; padding: 12px;
+    border-radius: 4px 14px 14px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(241,238,249,0.45);
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    cursor: pointer; transition: all .18s;
+}
+.report-cancel:hover { background: rgba(255,255,255,0.08); color: #F1EEF9; }
+.report-submit {
+    flex: 1; padding: 12px;
+    border-radius: 4px 14px 14px 14px;
+    background: linear-gradient(135deg, #9f1239, #F43F5E);
+    border: none; color: #fff;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .18s;
+    box-shadow: 0 4px 16px rgba(244,63,94,0.25);
+}
+.report-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(244,63,94,0.4); }
+
+/* Toast */
+.chat-toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 22px;
+    border-radius: 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    color: #fff; z-index: 9998; pointer-events: none;
+    white-space: nowrap;
+    animation: toastIn .22s ease-out, toastOut .22s ease-in 3.2s forwards;
+}
+@keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+@keyframes toastOut { from { opacity:1; } to { opacity:0; } }
+@keyframes modalUp { from { opacity:0; transform:translateY(40px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+.chat-toast.ok { background: rgba(74,222,128,0.88); backdrop-filter: blur(8px); }
+.chat-toast.err { background: rgba(244,63,94,0.88); backdrop-filter: blur(8px); }
+
+/* ── E2E badge ── */
+.e2e-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    font-weight: 600;
+    color: #4ade80;
+    background: rgba(74,222,128,0.08);
+    border: 1px solid rgba(74,222,128,0.15);
+    border-radius: 20px;
+    padding: 2px 8px;
+    letter-spacing: 0.5px;
+}
+
+/* ══════════════
+   MOBILE RESPONSIVE
+══════════════ */
+@media (max-width: 768px) {
+    .chat-root {
+        height: calc(100vh - 56px);
+        height: calc(100svh - 56px);
+        position: relative;
+    }
+    .contacts-panel {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; z-index: 20;
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+    }
+    .contacts-panel.slide-out { transform: translateX(-100%); pointer-events: none; }
+    .chat-chamber {
+        position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        z-index: 15;
+        transform: translateX(100%);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+    }
+    .chat-chamber.slide-in { transform: translateX(0); }
+    .chat-back { display: flex !important; }
+    .chat-thread { padding: 14px 14px 10px; }
+    .input-bar { padding: 8px 12px 12px; }
+    .msg-card { gap: 8px; }
+    .msg-body { max-width: 82%; }
+    .chat-header { padding: 12px 14px; min-height: 60px; gap: 10px; }
+    .chat-header-avatar { width: 36px; height: 36px; font-size: 13px; border-radius: 11px; }
+    .contacts-top { padding: 16px 16px 14px; }
+    .contact-row { padding: 10px 16px; }
+
+    /* Account for bottom nav */
+    .contacts-panel {
+        padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+    }
+    .input-bar {
+        padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    }
+    .chat-toast {
+        bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+}
+@media (min-width: 769px) {
+    .chat-back { display: none !important; }
+    .contacts-panel { position: relative !important; transform: none !important; }
+    .chat-chamber { position: relative !important; transform: none !important; }
+}
+
+/* Small phones */
+@media (max-width: 400px) {
+    .chat-header-name { font-size: 13px; }
+    .chat-header-avatar { width: 32px; height: 32px; font-size: 12px; border-radius: 10px; }
+    .chat-hbtn { width: 34px; height: 34px; border-radius: 10px; }
+    .send-btn { width: 40px; height: 40px; border-radius: 12px; }
+    .input-icon-btn { width: 34px; height: 34px; }
+    .msg-text { font-size: 13px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- REPORT MODAL -->
+<div class="report-overlay" id="reportModal">
+    <div class="report-bg" onclick="closeReport()"></div>
+    <div class="report-modal">
+        <div class="report-title">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2L14 13H2L8 2Z" stroke="#F43F5E" stroke-width="1.5" fill="none" stroke-linejoin="round"/><line x1="8" y1="6.5" x2="8" y2="9.5" stroke="#F43F5E" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="11.5" r="0.7" fill="#F43F5E"/></svg>
+            REPORT USER
+        </div>
+        <select id="reportReason">
+            <option value="">Select reason…</option>
+            <option value="harassment">Harassment or bullying</option>
+            <option value="inappropriate">Inappropriate content</option>
+            <option value="spam">Spam or scam</option>
+            <option value="underage">Suspected underage user</option>
+            <option value="threats">Threats or violence</option>
+            <option value="other">Other</option>
+        </select>
+        <textarea id="reportDetails" placeholder="Describe what happened…"></textarea>
+        <div class="report-actions">
+            <button class="report-cancel" onclick="closeReport()">Cancel</button>
+            <button class="report-submit" onclick="submitReport()">Submit Report</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════ LAYOUT ════ -->
+<div class="chat-root">
+
+    <!-- ═══ CONTACTS PANEL (left) ═══ -->
+    <div class="contacts-panel" id="signalsPanel">
+
+        <div class="contacts-top">
+            <div class="contacts-title">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2.5 4.5C2.5 3.7 3.2 3 4 3H14C14.8 3 15.5 3.7 15.5 4.5V11C15.5 11.8 14.8 12.5 14 12.5H7.5L3 16V4.5Z" fill="url(#chtg)"/><circle cx="6.5" cy="8" r="1" fill="white" opacity="0.9"/><circle cx="9" cy="8" r="1" fill="white" opacity="0.9"/><circle cx="11.5" cy="8" r="1" fill="white" opacity="0.9"/><defs><linearGradient id="chtg" x1="2.5" y1="3" x2="15.5" y2="16" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs></svg>
+                Messages
+            </div>
+            <div class="search-wrap">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <circle cx="6" cy="6" r="4" stroke="currentColor" stroke-width="1.3"/>
+                    <path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Search conversations…" oninput="filterSignals(this.value)">
+            </div>
+        </div>
+
+        <div class="contact-list" id="signalList">
+            <!-- populated by JS -->
+        </div>
+
+    </div>
+
+    <!-- ═══ CHAT CHAMBER (right) ═══ -->
+    <div class="chat-chamber" id="voidChamber">
+
+        <!-- Empty state -->
+        <div class="chat-empty" id="voidSilence">
+            <div class="chat-empty-orb">
+                <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7 11C7 9.3 8.3 8 10 8H32C33.7 8 35 9.3 35 11V26C35 27.7 33.7 29 32 29H17L9 36V11Z" fill="url(#ecg)" opacity="0.6"/>
+                    <circle cx="16" cy="19" r="2" fill="white" opacity="0.7"/>
+                    <circle cx="21" cy="19" r="2" fill="white" opacity="0.7"/>
+                    <circle cx="26" cy="19" r="2" fill="white" opacity="0.7"/>
+                    <defs><linearGradient id="ecg" x1="7" y1="8" x2="35" y2="36" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs>
+                </svg>
+            </div>
+            <div class="chat-empty-title">Select a Conversation</div>
+            <div class="chat-empty-sub">Choose a match from the sidebar to start chatting. All messages are end-to-end encrypted.</div>
+            <div class="e2e-badge">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="2" y="5" width="6" height="4" rx="1" fill="#4ade80"/><path d="M3.5 5V3.5C3.5 2.4 4.4 1.5 5 1.5C5.6 1.5 6.5 2.4 6.5 3.5V5" stroke="#4ade80" stroke-width="1" fill="none"/></svg>
+                E2E Encrypted
+            </div>
+        </div>
+
+        <!-- Active chat -->
+        <div id="activeChatUI" style="display:none;flex-direction:column;flex:1;min-height:0;height:100%">
+
+            <!-- Header -->
+            <div class="chat-header">
+                <button class="chat-back" onclick="closeMobileChat()">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M9 2L4 7L9 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="chat-header-avatar" id="hdrOrb">?</div>
+                <div class="chat-header-info">
+                    <div class="chat-header-name" id="hdrName">Unknown</div>
+                    <div class="chat-header-status">Online · Encrypted</div>
+                </div>
+                <div class="e2e-badge" style="margin-right: 4px;">
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="2" y="5" width="6" height="4" rx="1" fill="#4ade80"/><path d="M3.5 5V3.5C3.5 2.4 4.4 1.5 5 1.5C5.6 1.5 6.5 2.4 6.5 3.5V5" stroke="#4ade80" stroke-width="1" fill="none"/></svg>
+                    E2E
+                </div>
+                <div class="chat-header-actions">
+                    <button class="chat-hbtn" title="Voice call (Premium)" onclick="openPremiumModal('call')" style="position:relative;">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 3.5C3 3 3.4 2.5 4 2.5H5.5C6 2.5 6.4 2.8 6.5 3.2L7.2 5C7.4 5.5 7.2 6 6.9 6.3L6 7.3C6.7 8.5 7.5 9.3 8.6 10L9.5 9.1C9.9 8.7 10.4 8.6 10.8 8.8L12.6 9.5C13 9.7 13.3 10 13.3 10.5V12C13.3 12.6 12.8 13 12.3 13C7 13 3 8.5 3 3.5Z" stroke="currentColor" stroke-width="1.3" fill="none"/>
+                        </svg>
+                        <span style="position:absolute;top:-3px;right:-3px;background:linear-gradient(135deg,#A855F7,#EC4899);border-radius:50%;width:11px;height:11px;display:flex;align-items:center;justify-content:center;font-size:6px;color:#fff;line-height:1;">🔒</span>
+                    </button>
+                    <button class="chat-hbtn danger" title="Report" onclick="openReport()">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 2L14 13H2L8 2Z" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linejoin="round"/>
+                            <line x1="8" y1="7" x2="8" y2="9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                            <circle cx="8" cy="11" r="0.6" fill="currentColor"/>
+                        </svg>
+                    </button>
+                    <!-- Search messages -->
+                    <button class="chat-hbtn" title="Search messages" onclick="searchMessages()" style="font-size:14px">🔍</button>
+                    <!-- More actions: block / mute / unmatch -->
+                    <button class="chat-hbtn" title="More actions" onclick="openUserActions(activeChatId)" style="font-size:17px;letter-spacing:1px">⋮</button>
+                </div>
+            </div>
+            <!-- Safety banner (shown first time) -->
+            <div id="safetyBanner" style="display:none;background:rgba(168,85,247,0.08);border-bottom:1px solid rgba(168,85,247,0.15);padding:8px 20px;font-size:12px;color:#a78bfa;display:flex;align-items:center;gap:8px;">
+                🔒 Messages are end-to-end encrypted. Never share personal contact details.
+                <button onclick="document.getElementById('safetyBanner').style.display='none'" style="margin-left:auto;background:none;border:none;color:#6b7280;cursor:pointer;font-size:14px">✕</button>
+            </div>
+
+            <!-- Thread -->
+            <div class="chat-thread" id="voidThread"></div>
+
+            <!-- Emoji -->
+            <div class="emoji-panel" id="emojiBar">
+                {% for em in ['😊','😂','❤️','🔥','👍','😍','🥺','😎','🎉','✨','💯','🙏','😭','🤩','💜','😋','🤔','😏','🥰','👏','🫶','✌️','😤','🤗','💪','🙌','🫠','🥹','😇','🤭'] %}
+                <span class="emoji-item" onclick="insertEmoji('{{ em }}')">{{ em }}</span>
+                {% endfor %}
+            </div>
+
+            <!-- Input bar -->
+            <div class="input-bar">
+                <div class="input-label">Compose Message</div>
+                <div class="input-row">
+                    <button class="input-icon-btn" onclick="toggleEmoji()" title="Emoji">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.3"/>
+                            <circle cx="6.5" cy="7.5" r="1" fill="currentColor"/>
+                            <circle cx="11.5" cy="7.5" r="1" fill="currentColor"/>
+                            <path d="M6 11.5C6.8 13 7.8 13.5 9 13.5C10.2 13.5 11.2 13 12 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                    <!-- Attachment — Premium locked -->
+                    <button class="input-icon-btn premium-lock-btn" onclick="openPremiumModal('attach')" title="Attach file (Premium)" style="position:relative;">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M15 9.5L8.5 16C7 17.5 4.5 17.5 3 16C1.5 14.5 1.5 12 3 10.5L10 3.5C11 2.5 12.5 2.5 13.5 3.5C14.5 4.5 14.5 6 13.5 7L7 13.5C6.5 14 5.5 14 5 13.5C4.5 13 4.5 12 5 11.5L11 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                        </svg>
+                        <span style="position:absolute;top:-4px;right:-4px;background:linear-gradient(135deg,#A855F7,#EC4899);border-radius:50%;width:12px;height:12px;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;line-height:1;">🔒</span>
+                    </button>
+                    <div class="input-wrap">
+                        <textarea id="msgInput" class="input-textarea" placeholder="Type a message…" rows="1"
+                            oninput="autoResize(this)" onkeydown="handleKey(event)"></textarea>
+                    </div>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                            <path d="M16 9L2 2.5L5 9L2 15.5L16 9Z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Premium Upsell Modal (Attachment / Call) -->
+            <div class="premium-overlay" id="premiumModal" style="display:none;position:fixed;inset:0;background:rgba(4,11,27,0.9);backdrop-filter:blur(20px);z-index:3000;align-items:center;justify-content:center;padding:20px;">
+                <div style="width:100%;max-width:440px;background:linear-gradient(145deg,#0f0c1e,#171326,#0d1525);border:1px solid rgba(168,85,247,0.25);border-radius:28px;padding:36px 28px 28px;position:relative;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 120px rgba(168,85,247,0.08);animation:modalUp 0.4s cubic-bezier(0.34,1.56,0.64,1);">
+                    <button onclick="closePremiumModal()" style="position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);color:rgba(241,238,249,0.5);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;" onmouseover="this.style.background='rgba(236,72,153,0.12)';this.style.color='#EC4899'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.color='rgba(241,238,249,0.5)'">✕</button>
+                    <div style="text-align:center;margin-bottom:24px;">
+                        <div id="modalIcon" style="width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,rgba(168,85,247,0.2),rgba(236,72,153,0.2));border:1px solid rgba(168,85,247,0.3);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 16px;box-shadow:0 0 40px rgba(168,85,247,0.2);">📎</div>
+                        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;background:linear-gradient(135deg,#C084FC,#F472B6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;" id="modalTitle">Attachments are Premium</div>
+                        <div style="font-size:13px;color:rgba(184,207,232,0.65);line-height:1.6;" id="modalDesc">Share photos, files and documents with your matches. Upgrade to Premium to unlock file sharing.</div>
+                    </div>
+                    <div style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.15);border-radius:16px;padding:14px 16px;margin-bottom:20px;">
+                        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(184,207,232,0.4);margin-bottom:10px;">Included in Premium</div>
+                        <div style="display:flex;flex-direction:column;gap:7px;">
+                            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(241,238,249,0.8);"><span style="color:#A855F7;">✦</span> File & photo attachments</div>
+                            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(241,238,249,0.8);"><span style="color:#A855F7;">✦</span> Voice & video calls</div>
+                            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(241,238,249,0.8);"><span style="color:#A855F7;">✦</span> Priority matching</div>
+                            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(241,238,249,0.8);"><span style="color:#A855F7;">✦</span> Read receipts & more</div>
+                        </div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,rgba(74,222,128,0.08),rgba(34,197,94,0.05));border:1px solid rgba(74,222,128,0.2);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+                        <span style="font-size:18px;">🎁</span>
+                        <div>
+                            <div style="font-size:12px;font-weight:700;color:#4ade80;">3-day free trial</div>
+                            <div style="font-size:11px;color:rgba(184,207,232,0.5);">Then ₹20/month · $4.99 international</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('main.premium') }}" style="display:block;width:100%;padding:15px;border-radius:16px;border:none;background:linear-gradient(135deg,#A855F7,#EC4899);color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-align:center;transition:all .25s;box-shadow:0 8px 28px rgba(168,85,247,0.4);text-decoration:none;margin-bottom:10px;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 14px 40px rgba(168,85,247,0.55)'" onmouseout="this.style.transform='';this.style.boxShadow='0 8px 28px rgba(168,85,247,0.4)'">
+                        👑 &nbsp;Upgrade to Premium
+                    </a>
+                    <div onclick="closePremiumModal()" style="text-align:center;font-size:12px;color:rgba(184,207,232,0.4);cursor:pointer;padding:4px;transition:color .2s;" onmouseover="this.style.color='rgba(184,207,232,0.7)'" onmouseout="this.style.color='rgba(184,207,232,0.4)'">Maybe later →</div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /chat-chamber -->
+</div><!-- /chat-root -->
+
+<script>
+const CUR_USER  = '{{ current_user.id }}';
+const INIT_CHAT = '{{ chat_user_id }}';
+const PREF_TZ   = '{{ preferred_timezone }}';
+
+let activeChatId = null;
+let lastSentAt   = null;
+let pollTimer    = null;
+let emojiOpen    = false;
+let allSignals   = [];
+
+/* ── helpers ── */
+function esc(t){ return String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+
+function toDate(s){
+    if(!s) return new Date(NaN);
+    return new Date(s.endsWith('Z')||s.includes('+') ? s : s+'Z');
+}
+
+function fmtTime(s){
+    const d=toDate(s); if(isNaN(d)) return '';
+    const tz=(PREF_TZ&&PREF_TZ!=='auto')?PREF_TZ:Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try{ return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',timeZone:tz}); }
+    catch{ return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
+}
+
+function fmtSidebarTs(s){
+    const d=toDate(s); if(isNaN(d)) return '';
+    const tz=(PREF_TZ&&PREF_TZ!=='auto')?PREF_TZ:Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const now=new Date();
+    try{
+        if(d.toDateString()===now.toDateString())
+            return d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',timeZone:tz});
+        return d.toLocaleDateString([],{month:'short',day:'numeric',timeZone:tz});
+    }catch{ return ''; }
+}
+
+function initial(id){ return id ? String(id)[0].toUpperCase() : '?'; }
+
+/* ── SIGNAL LIST ── */
+function renderSignals(list){
+    const el=document.getElementById('signalList');
+    if(!list.length){
+        el.innerHTML='<div class="contacts-empty"><svg width="48" height="48" viewBox="0 0 48 48" fill="none"><path d="M8 13C8 11.3 9.3 10 11 10H37C38.7 10 40 11.3 40 13V30C40 31.7 38.7 33 37 33H20L10 42V13Z" fill="url(#esg)" opacity="0.2"/><defs><linearGradient id="esg" x1="8" y1="10" x2="40" y2="42" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#A855F7"/><stop offset="100%" stop-color="#EC4899"/></linearGradient></defs></svg><p>No conversations yet.<br><em>Find a match to start chatting.</em></p></div>';
+        return;
+    }
+    el.innerHTML='';
+    list.forEach((s,i)=>{
+        const label='Match #'+(i+1);
+        const d=document.createElement('div');
+        d.className='contact-row'+(s.user_id===activeChatId?' active':'');
+        d.dataset.uid=s.user_id;
+        d.onclick=()=>selectChat(s.user_id,label);
+        d.innerHTML=`
+            <div class="contact-avatar">${esc(initial(s.user_id))}</div>
+            <div class="contact-info">
+                <div class="contact-name">${esc(label)}</div>
+                <div class="contact-preview" id="spv-${esc(s.user_id)}">${esc(s.preview||'Start a conversation…')}</div>
+            </div>
+            <div class="contact-meta">
+                <div class="contact-time" id="sts-${esc(s.user_id)}">${s.ts?fmtSidebarTs(s.ts):''}</div>
+                ${s.unread?`<div class="contact-badge">${s.unread}</div>`:''}
+            </div>`;
+        el.appendChild(d);
+    });
+}
+
+function filterSignals(q){
+    const lower=q.toLowerCase().trim();
+    renderSignals(lower ? allSignals.filter((_,i)=>('match #'+(i+1)).includes(lower)) : allSignals);
+}
+
+/* ── LOAD MATCHES ── */
+async function loadMatches(){
+    try{
+        const res=await fetch('/api/match/matches');
+        const data=await res.json();
+        if(!Array.isArray(data)) throw 'bad';
+        allSignals=data.map((m,i)=>({
+            user_id:String(m.user_id),
+            label:'Match #'+(i+1),
+            preview:'',ts:m.matched_at||null,unread:m.unread_count||0
+        }));
+        renderSignals(allSignals);
+        if(INIT_CHAT){
+            const idx=allSignals.findIndex(s=>s.user_id===INIT_CHAT);
+            selectChat(INIT_CHAT,'Match #'+(idx>=0?idx+1:1));
+        }
+    }catch(e){
+        console.warn('matches fallback:',e);
+        if(INIT_CHAT){
+            allSignals=[{user_id:INIT_CHAT,label:'Match #1',preview:'',ts:null,unread:0}];
+            renderSignals(allSignals);
+            selectChat(INIT_CHAT,'Match #1');
+        }
+    }
+}
+
+/* ── SELECT CHAT ── */
+function selectChat(uid,label){
+    if(activeChatId===uid){ openMobile(); return; }
+    activeChatId=uid; lastSentAt=null;
+    document.getElementById('hdrOrb').textContent=initial(uid);
+    document.getElementById('hdrName').textContent=label;
+    document.getElementById('voidSilence').style.display='none';
+    const ui=document.getElementById('activeChatUI');
+    ui.style.display='flex';
+    document.getElementById('voidThread').innerHTML='';
+    document.querySelectorAll('.contact-row').forEach(el=>el.classList.toggle('active',el.dataset.uid===uid));
+    if(pollTimer) clearInterval(pollTimer);
+    loadMessages();
+    pollTimer=setInterval(()=>{ if(!document.hidden) loadMessages(); },3000);
+    openMobile();
+}
+
+/* ── MOBILE ── */
+function openMobile(){
+    if(window.innerWidth<=768){
+        document.getElementById('signalsPanel').classList.add('slide-out');
+        document.getElementById('voidChamber').classList.add('slide-in');
+    }
+}
+function closeMobileChat(){
+    document.getElementById('signalsPanel').classList.remove('slide-out');
+    document.getElementById('voidChamber').classList.remove('slide-in');
+}
+
+/* ── BUILD MESSAGE CARD ── */
+function buildCard(msg){
+    const own=String(msg.sender_id)===String(CUR_USER);
+    const card=document.createElement('div');
+    card.className='msg-card'+(own?' own':'');
+    card.dataset.id=msg.id;
+    const readIcon=own?`<div class="msg-read"><svg viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`:'';
+    card.innerHTML=`
+        <div class="msg-avatar">${initial(msg.sender_id)}</div>
+        <div class="msg-body">
+            <div class="msg-glass">
+                <div class="msg-text">${esc(msg.content)}</div>
+            </div>
+            <div class="msg-meta">
+                ${fmtTime(msg.sent_at)}
+                ${readIcon}
+            </div>
+        </div>`;
+    return card;
+}
+
+/* ── LOAD MESSAGES ── */
+async function loadMessages(){
+    if(!activeChatId) return;
+    try{
+        let url=`/api/chat/messages/${activeChatId}`;
+        if(lastSentAt) url+='?since='+encodeURIComponent(lastSentAt);
+        const res=await fetch(url);
+        const msgs=await res.json();
+        if(!Array.isArray(msgs)||!msgs.length) return;
+
+        const thread=document.getElementById('voidThread');
+        if(!lastSentAt){
+            thread.innerHTML=`<div class="thread-date"><span>Today</span></div>`;
+            msgs.forEach(m=>thread.appendChild(buildCard(m)));
+        } else {
+            msgs.forEach(m=>{ if(!thread.querySelector(`[data-id="${m.id}"]`)) thread.appendChild(buildCard(m)); });
+        }
+        lastSentAt=msgs[msgs.length-1].sent_at;
+        thread.scrollTop=thread.scrollHeight;
+
+        const last=msgs[msgs.length-1];
+        const own=String(last.sender_id)===String(CUR_USER);
+        const prev=(own?'↑ ':'')+last.content;
+        const pvEl=document.getElementById('spv-'+activeChatId);
+        const tsEl=document.getElementById('sts-'+activeChatId);
+        if(pvEl) pvEl.textContent=prev.length>38?prev.slice(0,38)+'…':prev;
+        if(tsEl) tsEl.textContent=fmtSidebarTs(last.sent_at);
+    }catch(e){ console.error(e); }
+}
+
+/* ── SEND ── */
+async function sendMessage(){
+    if(!activeChatId) return;
+    const inp=document.getElementById('msgInput');
+    const txt=inp.value.trim();
+    if(!txt) return;
+    document.getElementById('sendBtn').disabled=true;
+    try{
+        const res=await fetch('/api/chat/send-message',{
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({receiver_id:activeChatId,content:txt})
+        });
+        const data=await res.json();
+        if(data.success){
+            inp.value=''; inp.style.height='auto';
+            lastSentAt=null; await loadMessages();
+            if(emojiOpen) toggleEmoji();
+        } else showToast(data.error||'Message failed','err');
+    }catch(e){ showToast('Connection lost — try again','err'); }
+    finally{ document.getElementById('sendBtn').disabled=false; }
+}
+
+/* ── INPUT ── */
+function autoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+function handleKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(); } }
+function toggleEmoji(){ emojiOpen=!emojiOpen; document.getElementById('emojiBar').classList.toggle('open',emojiOpen); }
+function insertEmoji(em){ const i=document.getElementById('msgInput'); i.value+=em; i.focus(); }
+
+/* ── REPORT ── */
+function openReport(){ document.getElementById('reportModal').classList.add('open'); }
+function closeReport(){
+    document.getElementById('reportModal').classList.remove('open');
+    document.getElementById('reportReason').value='';
+    document.getElementById('reportDetails').value='';
+}
+async function submitReport(){
+    const reason=document.getElementById('reportReason').value;
+    const details=document.getElementById('reportDetails').value;
+    if(!reason){ document.getElementById('reportReason').style.borderColor='rgba(244,63,94,0.6)'; return; }
+    try{
+        const res=await fetch('/api/chat/moderation/report',{
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({target_user_id:activeChatId,reason,details})
+        });
+        const r=await res.json();
+        closeReport();
+        showToast(r.message||'Report submitted','ok');
+    }catch{ showToast('Failed to submit report','err'); }
+}
+
+/* ── TOAST ── */
+function showToast(msg,type='ok'){
+    const t=document.createElement('div');
+    t.className='chat-toast '+(type==='err'?'err':'ok');
+    t.textContent=msg;
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),3800);
+}
+
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&activeChatId) loadMessages(); });
+loadMatches();
+
+/* ══════════════════════════════════════════════
+   BLOCK / MUTE / UNMATCH
+══════════════════════════════════════════════ */
+async function blockUser(userId){
+    if(!confirm('Block this user? They will not be able to message you.')) return;
+    const r=await fetch(`/api/user/${userId}/block`,{method:'POST'});
+    const d=await r.json();
+    if(d.success){ showToast('User blocked','ok'); loadMatches(); }
+    else showToast(d.error||'Failed','err');
+}
+async function muteUser(userId){
+    const r=await fetch(`/api/user/${userId}/mute`,{method:'POST'});
+    const d=await r.json();
+    if(d.success){ showToast('User muted','ok'); }
+    else showToast(d.error||'Failed','err');
+}
+async function unmatchUser(userId){
+    if(!confirm('Remove this match?')) return;
+    const r=await fetch(`/api/user/${userId}/unmatch`,{method:'POST'});
+    const d=await r.json();
+    if(d.success){ showToast('Unmatched','ok'); loadMatches(); }
+    else showToast(d.error||'Failed','err');
+}
+function openUserActions(userId){
+    let panel=document.getElementById('userActionsPanel');
+    if(panel){ panel.remove(); return; }
+    panel=document.createElement('div');
+    panel.id='userActionsPanel';
+    panel.style.cssText='position:fixed;top:70px;right:20px;background:#171326;border:1px solid rgba(168,85,247,0.25);border-radius:14px;padding:8px 0;z-index:9999;min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.5)';
+    document.body.appendChild(panel);
+    const close=function(e){ if(!panel.contains(e.target)){ panel.remove(); document.removeEventListener('click',close); } };
+    setTimeout(()=>document.addEventListener('click',close),10);
+    [
+        {label:'⚠️  Report',  fn:()=>submitQuickReport(userId)},
+        {label:'🔇  Mute',    fn:()=>muteUser(userId)},
+        {label:'💔  Unmatch', fn:()=>unmatchUser(userId)},
+        {label:'🚫  Block',   fn:()=>blockUser(userId), danger:true},
+    ].forEach(a=>{
+        const btn=document.createElement('button');
+        btn.textContent=a.label;
+        btn.style.cssText=`display:block;width:100%;padding:10px 18px;background:none;border:none;color:${a.danger?'#f87171':'#c4b5fd'};font-family:'DM Sans',sans-serif;font-size:14px;text-align:left;cursor:pointer`;
+        btn.onmouseover=()=>btn.style.background='rgba(168,85,247,0.1)';
+        btn.onmouseout=()=>btn.style.background='none';
+        btn.onclick=()=>{ a.fn(); panel.remove(); };
+        panel.appendChild(btn);
+    });
+}
+async function submitQuickReport(userId){
+    const reason=prompt('Reason (harassment/spam/inappropriate/other):','harassment');
+    if(!reason) return;
+    const r=await fetch(`/api/chat/${userId}/report`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})});
+    const d=await r.json();
+    showToast(d.success?'Report submitted':d.error||'Failed', d.success?'ok':'err');
+}
+
+/* ══════════════════════════════════════════════
+   TYPING INDICATORS
+══════════════════════════════════════════════ */
+let typingTimer=null;
+function onMsgInput(){
+    if(!activeChatId||!window._sphSock) return;
+    window._sphSock.emit('typing_start',{to_user_id:activeChatId});
+    clearTimeout(typingTimer);
+    typingTimer=setTimeout(()=>window._sphSock.emit('typing_stop',{to_user_id:activeChatId}),2500);
+}
+function showTypingBubble(fromId){
+    if(fromId!==activeChatId) return;
+    let el=document.getElementById('typingBubble');
+    if(!el){
+        el=document.createElement('div');
+        el.id='typingBubble';
+        el.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+        el.style.cssText='display:flex;gap:5px;padding:10px 16px;align-items:center';
+        const feed=document.getElementById('msgFeed');
+        if(feed) feed.appendChild(el);
+    }
+    el.style.display='flex';
+    clearTimeout(el._t);
+    el._t=setTimeout(()=>el.style.display='none',3000);
+    const feed=document.getElementById('msgFeed');
+    if(feed) feed.scrollTop=feed.scrollHeight;
+}
+(function initSock(){
+    if(typeof io==='undefined') return;
+    const s=io(); window._sphSock=s;
+    s.on('typing_start',d=>showTypingBubble(d.from_user_id));
+    s.on('typing_stop', d=>{ const el=document.getElementById('typingBubble'); if(el&&d.from_user_id===activeChatId) el.style.display='none'; });
+    s.on('new_message', d=>{ if(d.from_user_id===activeChatId) loadMessages(); });
+    s.on('messages_read',d=>{ if(d.by_user_id===activeChatId) d.message_ids.forEach(mid=>{ const t=document.querySelector(`[data-msg-id="${mid}"] .read-tick`); if(t) t.textContent='✓✓'; }); });
+})();
+document.getElementById('msgInput')?.addEventListener('input',onMsgInput);
+
+/* ══════════════════════════════════════════════
+   MESSAGE SEARCH
+══════════════════════════════════════════════ */
+async function searchMessages(){
+    const q=prompt('Search messages:','');
+    if(!q||!activeChatId) return;
+    const r=await fetch(`/api/chat/${activeChatId}/search?q=${encodeURIComponent(q)}`);
+    const d=await r.json();
+    if(!d.results||!d.results.length){ showToast('No results','err'); return; }
+    const w=window.open('','_blank','width=500,height=600');
+    w.document.write('<html><head><title>Search</title><style>body{font-family:DM Sans,sans-serif;background:#040B1B;color:#c4b5fd;padding:16px}div{border-bottom:1px solid rgba(168,85,247,.15);padding:10px 0}small{color:#6b7280}p{margin:4px 0}</style></head><body>');
+    d.results.forEach(r=>w.document.write(`<div><small>${new Date(r.sent_at).toLocaleString()}</small><p>${r.snippet.replace(/</g,'&lt;')}</p></div>`));
+    w.document.write('</body></html>');
+}
+
+
+/* ── PREMIUM MODAL ── */
+function openPremiumModal(type) {
+    const modal = document.getElementById('premiumModal');
+    const icon  = document.getElementById('modalIcon');
+    const title = document.getElementById('modalTitle');
+    const desc  = document.getElementById('modalDesc');
+    if (type === 'call') {
+        icon.textContent  = '📞';
+        title.textContent = 'Calls are Premium';
+        desc.textContent  = 'Make crystal-clear voice and video calls with your matches. Upgrade to Premium to unlock calling.';
+    } else {
+        icon.textContent  = '📎';
+        title.textContent = 'Attachments are Premium';
+        desc.textContent  = 'Share photos, files and documents with your matches. Upgrade to Premium to unlock file sharing.';
+    }
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closePremiumModal() {
+    document.getElementById('premiumModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePremiumModal(); });
+document.getElementById('premiumModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closePremiumModal();
+});
+</script>
+{% endblock %}

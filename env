@@ -1,0 +1,19 @@
+# Flask Configuration
+FLASK_ENV=development
+FLASK_APP=run.py
+
+# Secret Key - Change this to a random string in production
+SECRET_KEY=your-secret-key-change-this-in-production
+
+# Database
+DATABASE_URL=sqlite:///friendship_app.db
+# For production with PostgreSQL:
+# DATABASE_URL=postgresql://user:password@localhost:5432/friendship_circle
+
+# Security
+SESSION_COOKIE_SECURE=False
+SESSION_COOKIE_HTTPONLY=True
+SESSION_COOKIE_SAMESITE=Lax
+
+# Application
+DEBUG=True
