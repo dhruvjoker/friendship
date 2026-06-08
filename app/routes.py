@@ -31,7 +31,7 @@ FAILED_LOGIN_ATTEMPTS: dict = defaultdict(deque)
 
 USERNAME_PATTERN = re.compile(r'^[A-Za-z0-9_]{3,20}$')
 EMAIL_PATTERN    = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-PASSWORD_MIN_LEN = 8
+PASSWORD_MIN_LEN = 4
 
 
 def _rate_cfg():
