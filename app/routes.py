@@ -927,7 +927,8 @@ def _time_ago(dt):
     if s < 60:    return 'just now'
     if s < 3600:  return f'{s // 60}m ago'
     if s < 86400: return f'{s // 3600}h ago'
-    return f'{s // 86400}d ago'def _rate_cfg():
+    return f'{s // 86400}d ago'
+    def _rate_cfg():
     limit  = current_app.config.get('LOGIN_RATE_LIMIT', 5)
     window = current_app.config.get('LOGIN_RATE_WINDOW', 900)
     return limit, window
