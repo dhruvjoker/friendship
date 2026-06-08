@@ -928,7 +928,9 @@ def _time_ago(dt):
     if s < 3600:  return f'{s // 60}m ago'
     if s < 86400: return f'{s // 3600}h ago'
     return f'{s // 86400}d ago'
-    def _rate_cfg():
+
+
+def _rate_cfg():
     limit  = current_app.config.get('LOGIN_RATE_LIMIT', 5)
     window = current_app.config.get('LOGIN_RATE_WINDOW', 900)
     return limit, window
@@ -1821,7 +1823,10 @@ def _time_ago(dt):
     if s < 60:    return 'just now'
     if s < 3600:  return f'{s // 60}m ago'
     if s < 86400: return f'{s // 3600}h ago'
-    return f'{s // 86400}d ago'def _rate_cfg():
+    return f'{s // 86400}d ago'
+
+
+def _rate_cfg():
     limit  = current_app.config.get('LOGIN_RATE_LIMIT', 5)
     window = current_app.config.get('LOGIN_RATE_WINDOW', 900)
     return limit, window
@@ -1909,7 +1914,7 @@ def register():
                 email=email,
                 password_hash=generate_password_hash(password),
                 encryption_key=encryption_key,
-                email_verified=False,
+                email_verified=True,
                 email_verify_token=verify_token,
                 email_verify_sent_at=datetime.utcnow(),
             )
@@ -2058,7 +2063,9 @@ def login():
                 return jsonify({'error': message}), 429
             return render_template('login.html', error=message)
 
-        user = User.query.filter_by(username=username).first()
+        user = User.query.filter(
+            (User.username == username) | (User.email == username)
+        ).first()
 
         if user and check_password_hash(user.password_hash, password):
             # Ban check
