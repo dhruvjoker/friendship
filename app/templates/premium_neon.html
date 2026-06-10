@@ -619,23 +619,52 @@
 let isIntl = false;
 let currentPlan = 'monthly';
 
-// Auto-detect India vs international by timezone
-(function detectRegion() {
+// Detect region from timezone + locale
+function detectUserRegion() {
     try {
         const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-        isIntl = !tz.startsWith('Asia/Kolkata') && !tz.startsWith('Asia/Calcutta');
-    } catch(e) { isIntl = false; }
-})();
+        const locale = navigator.language || navigator.languages?.[0] || '';
+        // India
+        if (tz.startsWith('Asia/Kolkata') || tz.startsWith('Asia/Calcutta')) return 'IN';
+        // Europe (common zones)
+        const eurTZ = ['Europe/London','Europe/Paris','Europe/Berlin','Europe/Rome','Europe/Madrid',
+            'Europe/Amsterdam','Europe/Brussels','Europe/Vienna','Europe/Zurich','Europe/Stockholm',
+            'Europe/Oslo','Europe/Copenhagen','Europe/Helsinki','Europe/Warsaw','Europe/Prague',
+            'Europe/Budapest','Europe/Bucharest','Europe/Athens','Europe/Lisbon','Europe/Dublin'];
+        if (eurTZ.some(z => tz.startsWith(z))) return tz.startsWith('Europe/London') ? 'GB' : 'EU';
+        // Canada
+        if (tz.startsWith('America/Toronto') || tz.startsWith('America/Vancouver') || tz.startsWith('America/Winnipeg') || tz.startsWith('America/Halifax')) return 'CA';
+        // Australia
+        if (tz.startsWith('Australia/')) return 'AU';
+        // US & default
+        return 'US';
+    } catch(e) { return 'US'; }
+}
+
+const USER_REGION = detectUserRegion();
+// isIntl kept for legacy compat
+let isIntl = USER_REGION !== 'IN';
+
+// Per-region pricing
+const REGION_PRICE = {
+    IN: { sym: '₹',  monthly: '₹20',   quarterly: '₹50',    yearly: '₹149',  m: '₹20/month',   q: '₹50/quarter',   y: '₹149/year',  period: 'per month' },
+    US: { sym: '$',  monthly: '$4.99',  quarterly: '$12.99', yearly: '$29.99', m: '$4.99/month',  q: '$12.99/quarter', y: '$29.99/year', period: 'per month' },
+    EU: { sym: '€',  monthly: '€4.49',  quarterly: '€11.99', yearly: '$26.99', m: '€4.49/month',  q: '€11.99/quarter', y: '€26.99/year', period: 'per month' },
+    GB: { sym: '£',  monthly: '£3.99',  quarterly: '£10.99', yearly: '£24.99', m: '£3.99/month',  q: '£10.99/quarter', y: '£24.99/year', period: 'per month' },
+    CA: { sym: 'C$', monthly: 'C$6.99', quarterly: 'C$17.99',yearly: 'C$39.99',m: 'C$6.99/month', q: 'C$17.99/quarter',y: 'C$39.99/year',period: 'per month' },
+    AU: { sym: 'A$', monthly: 'A$7.99', quarterly: 'A$20.99',yearly: 'A$49.99',m: 'A$7.99/month', q: 'A$20.99/quarter',y: 'A$49.99/year',period: 'per month' },
+};
+const rp = REGION_PRICE[USER_REGION] || REGION_PRICE['US'];
 
 const plans = {
-    monthly:   { inr: '₹20',  usd: '$4.99',  inrFull: '₹20/month',    usdFull: '$4.99/month',    name: 'Monthly Premium',   desc_inr: '3-day free trial · then ₹20/month',    desc_usd: '3-day free trial · then $4.99/month',   period_inr: 'per month',   period_usd: 'per month'  },
-    quarterly: { inr: '₹50',  usd: '$12.99', inrFull: '₹50/3 months',  usdFull: '$12.99/3 months',name: 'Quarterly Premium', desc_inr: '3-day free trial · then ₹50/quarter',   desc_usd: '3-day free trial · then $12.99/quarter',period_inr: 'per quarter', period_usd: 'per quarter'},
-    yearly:    { inr: '₹149', usd: '$29.99', inrFull: '₹149/year',     usdFull: '$29.99/year',    name: 'Yearly Premium',    desc_inr: '3-day free trial · then ₹149/year',    desc_usd: '3-day free trial · then $29.99/year',   period_inr: 'per year',    period_usd: 'per year'  }
+    monthly:   { price: rp.monthly, priceFull: rp.m,  name: 'Monthly Premium',   desc: '3-day free trial · then ' + rp.m,   period: 'per month'   },
+    quarterly: { price: rp.quarterly,priceFull: rp.q, name: 'Quarterly Premium', desc: '3-day free trial · then ' + rp.q,   period: 'per quarter' },
+    yearly:    { price: rp.yearly,  priceFull: rp.y,  name: 'Yearly Premium',    desc: '3-day free trial · then ' + rp.y,   period: 'per year'    }
 };
 
 function updateAllPrices() {
     ['monthly','quarterly','yearly'].forEach(p => {
-        document.getElementById('price-' + p).textContent = isIntl ? plans[p].usd : plans[p].inr;
+        document.getElementById('price-' + p).textContent = plans[p].price;
     });
     updateSummary();
 }
@@ -650,14 +679,14 @@ function selectPlan(plan) {
 function updateSummary() {
     const p = plans[currentPlan];
     document.getElementById('summaryName').textContent   = p.name;
-    document.getElementById('summaryDesc').textContent   = isIntl ? p.desc_usd   : p.desc_inr;
-    document.getElementById('summaryPrice').textContent  = isIntl ? p.usd        : p.inr;
-    document.getElementById('summaryPeriod').textContent = isIntl ? p.period_usd : p.period_inr;
+    document.getElementById('summaryDesc').textContent   = p.desc;
+    document.getElementById('summaryPrice').textContent  = p.price;
+    document.getElementById('summaryPeriod').textContent = p.period;
 }
 
 function startCheckout() {
     document.getElementById('checkoutPlanName').textContent   = plans[currentPlan].name;
-    document.getElementById('checkoutAfterPrice').textContent = isIntl ? plans[currentPlan].usdFull : plans[currentPlan].inrFull;
+    document.getElementById('checkoutAfterPrice').textContent = plans[currentPlan].priceFull;
     document.getElementById('checkoutOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
