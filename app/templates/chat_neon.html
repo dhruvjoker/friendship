@@ -1118,7 +1118,7 @@
                         <span style="font-size:18px;">🎁</span>
                         <div>
                             <div style="font-size:12px;font-weight:700;color:#4ade80;">3-day free trial</div>
-                            <div style="font-size:11px;color:rgba(184,207,232,0.5);">Then ₹20/month · $4.99 international</div>
+                            <div style="font-size:11px;color:rgba(184,207,232,0.5);" id="chatPremiumPrice">Then ₹20/month</div>
                         </div>
                     </div>
                     <a href="{{ url_for('main.premium') }}" style="display:block;width:100%;padding:15px;border-radius:16px;border:none;background:linear-gradient(135deg,#A855F7,#EC4899);color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-align:center;transition:all .25s;box-shadow:0 8px 28px rgba(168,85,247,0.4);text-decoration:none;margin-bottom:10px;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 14px 40px rgba(168,85,247,0.55)'" onmouseout="this.style.transform='';this.style.boxShadow='0 8px 28px rgba(168,85,247,0.4)'">
@@ -1476,7 +1476,32 @@ async function searchMessages(){
     const w=window.open('','_blank','width=500,height=600');
     w.document.write('<html><head><title>Search</title><style>body{font-family:DM Sans,sans-serif;background:#040B1B;color:#c4b5fd;padding:16px}div{border-bottom:1px solid rgba(168,85,247,.15);padding:10px 0}small{color:#6b7280}p{margin:4px 0}</style></head><body>');
     d.results.forEach(r=>w.document.write(`<div><small>${new Date(r.sent_at).toLocaleString()}</small><p>${r.snippet.replace(/</g,'&lt;')}</p></div>`));
-    w.document.write('</body></html>');
+    w.document.write('
+<script>
+(function() {
+    function detectUserRegion() {
+        try {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+            const eurTZ = ['Europe/London','Europe/Paris','Europe/Berlin','Europe/Rome','Europe/Madrid',
+                'Europe/Amsterdam','Europe/Brussels','Europe/Vienna','Europe/Zurich','Europe/Stockholm',
+                'Europe/Oslo','Europe/Copenhagen','Europe/Helsinki','Europe/Warsaw','Europe/Prague',
+                'Europe/Budapest','Europe/Bucharest','Europe/Athens','Europe/Lisbon','Europe/Dublin'];
+            if (tz.startsWith('Asia/Kolkata') || tz.startsWith('Asia/Calcutta')) return 'IN';
+            if (eurTZ.some(z => tz.startsWith(z))) return tz.startsWith('Europe/London') ? 'GB' : 'EU';
+            if (tz.startsWith('America/Toronto')||tz.startsWith('America/Vancouver')||tz.startsWith('America/Winnipeg')||tz.startsWith('America/Halifax')) return 'CA';
+            if (tz.startsWith('Australia/')) return 'AU';
+            return 'US';
+        } catch(e) { return 'US'; }
+    }
+    const PRICES = {
+        IN: '₹20/month', US: '$4.99/month', EU: '€4.49/month',
+        GB: '£3.99/month', CA: 'C$6.99/month', AU: 'A$7.99/month'
+    };
+    const el = document.getElementById('chatPremiumPrice');
+    if (el) el.textContent = 'Then ' + (PRICES[detectUserRegion()] || PRICES['US']);
+})();
+</script>
+</body></html>');
 }
 
 
