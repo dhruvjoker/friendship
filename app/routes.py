@@ -9,6 +9,25 @@ import uuid
 
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, session, url_for, g
 from flask_login import current_user, login_required, login_user, logout_user
+
+TRIAL_DAYS = 3
+
+def require_access(f):
+    """Block route if 3-day trial has expired and user has not paid for premium."""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not current_user.is_authenticated:
+            return redirect(url_for('auth.login'))
+        if not current_user.has_access():
+            if request.is_json:
+                return jsonify({
+                    'error': 'trial_expired',
+                    'message': 'Your free trial has ended. Upgrade to Premium to continue chatting.'
+                }), 402
+            return redirect(url_for('main.premium'))
+        return f(*args, **kwargs)
+    return decorated
 from werkzeug.security import check_password_hash, generate_password_hash
 import requests
 import jwt
@@ -31,7 +50,7 @@ FAILED_LOGIN_ATTEMPTS: dict = defaultdict(deque)
 
 USERNAME_PATTERN = re.compile(r'^[A-Za-z0-9_]{3,20}$')
 EMAIL_PATTERN    = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-PASSWORD_MIN_LEN = 4
+PASSWORD_MIN_LEN = 8
 
 
 def _rate_cfg():
@@ -294,6 +313,8 @@ def login():
             session.clear()
             login_user(user, remember=False)
             user.last_seen = datetime.utcnow()
+            if user.trial_started_at is None:
+                user.trial_started_at = datetime.utcnow()
             db.session.commit()
             record_user_ip(user.id, source='login')
 
@@ -634,6 +655,7 @@ def report_conversation():
 
 @match_bp.route('/find-match', methods=['POST'])
 @login_required
+@require_access
 def find_match():
     try:
         user_problems = set(current_user.get_problems())
@@ -709,6 +731,7 @@ def find_match():
 
 @match_bp.route('/matches')
 @login_required
+@require_access
 def get_matches():
     connections = UserConnection.query.filter_by(user_id=current_user.id, is_active=True).all()
     matches = []
@@ -730,6 +753,7 @@ def get_matches():
 
 @chat_bp.route('/send-message', methods=['POST'])
 @login_required
+@require_access
 def send_message():
     data        = request.get_json() if request.is_json else request.form
     receiver_id = data.get('receiver_id', '').strip()
@@ -777,6 +801,7 @@ def send_message():
 
 @chat_bp.route('/messages/<receiver_id>')
 @login_required
+@require_access
 def get_messages(receiver_id):
     try:
         if not can_access_conversation(current_user.id, receiver_id):
@@ -827,6 +852,7 @@ def get_messages(receiver_id):
 
 @chat_bp.route('/chat')
 @login_required
+@require_access
 def chat_home():
     conn     = UserConnection.query.filter_by(user_id=current_user.id, is_active=True).first()
     first_id = conn.matched_user_id if conn else ''
@@ -835,6 +861,7 @@ def chat_home():
 
 @chat_bp.route('/chat/<user_id>')
 @login_required
+@require_access
 def chat_page(user_id):
     if not can_access_conversation(current_user.id, user_id):
         return redirect(url_for('main.dashboard'))
