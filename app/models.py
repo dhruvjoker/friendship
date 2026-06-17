@@ -39,6 +39,11 @@ class User(UserMixin, db.Model):
     is_active        = db.Column(db.Boolean, default=True)
     created_at       = db.Column(db.DateTime, default=datetime.utcnow)
     last_seen        = db.Column(db.DateTime, default=datetime.utcnow)
+
+    # Trial & Premium
+    trial_started_at = db.Column(db.DateTime, nullable=True)   # set on first login
+    is_premium       = db.Column(db.Boolean, default=False)
+    premium_until    = db.Column(db.DateTime, nullable=True)
     preferred_region   = db.Column(db.String(64))
     preferred_timezone = db.Column(db.String(128))
 
@@ -54,6 +59,23 @@ class User(UserMixin, db.Model):
 
     def get_problems(self):
         return [p.strip() for p in self.problems.split(',')] if self.problems else []
+
+    def has_access(self):
+        """True if user is within 3-day trial OR has active premium."""
+        from datetime import datetime
+        now = datetime.utcnow()
+        # Active paid premium
+        if self.is_premium:
+            if self.premium_until is None or self.premium_until > now:
+                return True
+            # premium expired
+            return False
+        # Trial: 3 days from first login
+        if self.trial_started_at:
+            delta = now - self.trial_started_at
+            return delta.days < 3
+        # Trial not started yet (hasn't logged in) — allow
+        return True
 
 
 class UserConnection(db.Model):
