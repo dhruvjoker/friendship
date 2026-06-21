@@ -340,7 +340,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('main.index'))
+    return redirect(url_for('landing.home'))
 
 
 @auth_bp.route('/auth/clerk/callback', methods=['POST'])
@@ -433,13 +433,6 @@ def clerk_callback():
 
 
 # ==================== Main Routes ====================
-
-@main_bp.route('/')
-def index():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.dashboard'))
-    return redirect(url_for('auth.login'))
-
 
 @main_bp.route('/dashboard')
 @login_required
