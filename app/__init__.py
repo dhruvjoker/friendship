@@ -72,6 +72,21 @@ def create_app(config_name=None):
     from app.routes_landing import landing_bp
     app.register_blueprint(landing_bp)
 
+    # ── HTTPS enforcement (Render terminates TLS at its edge and forwards
+    #    plain HTTP internally, so we check X-Forwarded-Proto rather than
+    #    request.is_secure — avoids a redirect loop) ─────────────────────────
+    @app.before_request
+    def enforce_https():
+        if config_name != 'production':
+            return None
+        from flask import request, redirect
+
+        forwarded_proto = request.headers.get('X-Forwarded-Proto', 'https')
+        if forwarded_proto == 'http':
+            url = request.url.replace('http://', 'https://', 1)
+            return redirect(url, code=301)
+        return None
+
     # ── Security headers ──────────────────────────────────────────────────────
     @app.after_request
     def add_security_headers(response):
@@ -125,5 +140,30 @@ def create_app(config_name=None):
             for p in defaults:
                 db.session.add(p)
             db.session.commit()
+
+    # ── Error handlers ────────────────────────────────────────────────────────
+    @app.errorhandler(404)
+    def not_found(e):
+        from flask import request, jsonify
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Not found'}), 404
+        return (
+            '<html><body style="background:#0D0B1A;color:#F1EEF9;'
+            'font-family:sans-serif;text-align:center;padding:80px 20px;">'
+            '<h1>404</h1><p>Page not found.</p>'
+            '<a href="/" style="color:#A855F7;">Go home</a></body></html>'
+        ), 404
+
+    @app.errorhandler(500)
+    def server_error(e):
+        from flask import request, jsonify
+        if request.path.startswith('/api/'):
+            return jsonify({'error': 'Internal server error'}), 500
+        return (
+            '<html><body style="background:#0D0B1A;color:#F1EEF9;'
+            'font-family:sans-serif;text-align:center;padding:80px 20px;">'
+            '<h1>500</h1><p>Something went wrong on our end.</p>'
+            '<a href="/" style="color:#A855F7;">Go home</a></body></html>'
+        ), 500
 
     return app
