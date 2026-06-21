@@ -161,7 +161,8 @@
 }
 .plan-tab {
     flex: 1;
-    padding: 10px 8px;
+    min-width: 0;
+    padding: 10px 6px;
     border-radius: 10px;
     border: none;
     background: transparent;
@@ -173,6 +174,7 @@
     transition: all .25s;
     text-align: center;
     position: relative;
+    overflow: hidden;
 }
 .plan-tab.active {
     background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(236,72,153,0.2));
@@ -188,7 +190,7 @@
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     margin-top: 2px;
 }
-.plan-tab .tab-label { font-size: 10px; opacity: 0.6; }
+.plan-tab .tab-label { display: block; font-size: 10px; opacity: 0.6; line-height: 1.4; }
 .plan-tab .tab-save {
     position: absolute;
     top: -8px; right: -4px;
@@ -418,7 +420,7 @@
         <h1>Sphinx Premium</h1>
         <p>Unlock the full Sphinx experience. Connect deeper, share freely, and make every conversation count.</p>
         <div class="trial-badge">
-            ✦ &nbsp;3-day free trial · Pay to keep access after
+            ✦ &nbsp;3-day trial · Pay to keep access after
         </div>
     </div>
 
@@ -485,7 +487,7 @@
     <div class="premium-modal" style="max-width:100%;border-radius:24px;padding:28px 24px 24px;">
         <div style="text-align:center;margin-bottom:20px;">
             <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#F1EEF9;margin-bottom:4px;">Choose your plan</div>
-            <div class="trial-badge" style="margin:8px auto 0;">✦ &nbsp;3 days free · access locks until you pay</div>
+            <div class="trial-badge" style="margin:8px auto 0;">✦ &nbsp;3-day trial · access locks until you pay</div>
         </div>
 
         <!-- Plan tabs -->
@@ -513,7 +515,7 @@
         <div class="plan-summary">
             <div>
                 <div class="plan-summary-name" id="summaryName">Monthly Premium</div>
-                <div class="plan-summary-desc" id="summaryDesc">3-day free trial · then ₹20/month</div>
+                <div class="plan-summary-desc" id="summaryDesc">3-day trial · then ₹20/month</div>
             </div>
             <div>
                 <div class="plan-summary-price" id="summaryPrice">₹20</div>
@@ -522,11 +524,11 @@
         </div>
 
         <button class="premium-cta" onclick="startCheckout()">
-            <span>🎉 &nbsp;Start Free Trial</span>
+            <span>🎉 &nbsp;Start Trial</span>
         </button>
         <div class="continue-free" onclick="window.history.back()">Maybe later →</div>
         <div class="fine-print">
-            After your 3-day free trial ends, your account locks until you pay.<br>
+            After your 3-day trial ends, your account locks until you pay.<br>
             No auto-charge — you choose when to pay. Prices inclusive of applicable taxes.
         </div>
     </div>
@@ -649,9 +651,9 @@ const REGION_PRICE = {
 const rp = REGION_PRICE[USER_REGION] || REGION_PRICE['US'];
 
 const plans = {
-    monthly:   { price: rp.monthly, priceFull: rp.m,  name: 'Monthly Premium',   desc: '3-day free trial · then ' + rp.m,   period: 'per month'   },
-    quarterly: { price: rp.quarterly,priceFull: rp.q, name: 'Quarterly Premium', desc: '3-day free trial · then ' + rp.q,   period: 'per quarter' },
-    yearly:    { price: rp.yearly,  priceFull: rp.y,  name: 'Yearly Premium',    desc: '3-day free trial · then ' + rp.y,   period: 'per year'    }
+    monthly:   { price: rp.monthly, priceFull: rp.m,  name: 'Monthly Premium',   desc: '3-day trial · then ' + rp.m,   period: 'per month'   },
+    quarterly: { price: rp.quarterly,priceFull: rp.q, name: 'Quarterly Premium', desc: '3-day trial · then ' + rp.q,   period: 'per quarter' },
+    yearly:    { price: rp.yearly,  priceFull: rp.y,  name: 'Yearly Premium',    desc: '3-day trial · then ' + rp.y,   period: 'per year'    }
 };
 
 function updateAllPrices() {
