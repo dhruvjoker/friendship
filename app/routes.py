@@ -111,7 +111,7 @@ def register():
     problems = Problem.query.all()
     if request.method == 'POST':
         data = request.get_json() if request.is_json else request.form
-        username = data.get('username', '').strip()
+        username = data.get('username', '').strip().lower()
         email    = data.get('email', '').strip().lower()
         password = data.get('password', '')
         problems_selected = data.getlist('problems') if hasattr(data, 'getlist') else data.get('problems', [])
@@ -291,7 +291,8 @@ def login():
             return render_template('login.html', error=message)
 
         user = User.query.filter(
-            (User.username == username) | (User.email == username)
+            (db.func.lower(User.username) == username.lower()) |
+            (User.email == username.lower())
         ).first()
 
         if user and check_password_hash(user.password_hash, password):
